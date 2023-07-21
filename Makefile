@@ -8,11 +8,17 @@ PATH_MY_OS = /home/renato/Desktop/fse/$(PRJ_NAME)
 
 all:
 	make clean
-	make -C shared prod
-	make -C dep prod
-	make -C main prod
+	make -C shared
+	make -C dep
+	make -C main
 	make -C main run_prod
 
+all_dep:
+	make clean
+	make -C shared
+	make -C dep
+	make -C main
+	make -C main run_prod
 
 #  CONFIGURACOES DE DEPLOY
 deps_dev:
@@ -20,11 +26,7 @@ deps_dev:
 	sudo apt install sshpass
 
 deps_prod:
-	sudo apt-get install \
-		libi2c-dev \
-		i2c-tools \
-		wiringpi \
-		libwiringpi-dev
+# sudo apt-get install
 
 ssh:
 	sshpass -p $(PASS) ssh $(USER)@$(IP) -p $(PORT) 

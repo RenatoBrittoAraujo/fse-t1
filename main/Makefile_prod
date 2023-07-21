@@ -1,4 +1,4 @@
-=gcc
+CC=gcc
 TARGET=main_prod
 SRCEXT=c
 LIB=-l pthread
