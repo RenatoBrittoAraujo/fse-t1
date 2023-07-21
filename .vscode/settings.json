@@ -14,7 +14,9 @@
         "errors.h": "c",
         "threads.h": "c",
         "stdlib.h": "c",
-        "garbage_collector.h": "c"
+        "garbage_collector.h": "c",
+        "interface.h": "c",
+        "typeinfo": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "enabled"
 }

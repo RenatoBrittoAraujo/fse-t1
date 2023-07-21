@@ -9,7 +9,7 @@
 #include "shared/inc/shared_util.h"
 #include "shared/inc/tcp_ip.h"
 
-#define PERIODO_MINIMO_ENTRE_EXECUCOES 100 // milissegundos
+#define PERIODO_MINIMO_ENTRE_EXECUCOES 100 * MILLI
 
 // ========== COMEÇA CONFIG DE PINOS =============
 #define RASP_ESTACIONAMENTO_1_3 1
@@ -191,7 +191,7 @@ void abrir_thread_server_dependente(EstadoEstacionamento *e)
 {
     log_print("[DEP] abrir_thread_server_dependente\n", LEVEL_DEBUG);
 
-    ThreadState *t = create_thread_state();
+    ThreadState *t = create_thread_state(-1);
     e->t_main = t;
     t->routine = escuta_main;
     t->args = e;
@@ -268,7 +268,7 @@ EstadoEstacionamento *le_aplica_estado(EstadoEstacionamento *e, int id_andar)
         fflush(NULL);
 
         // claramente essa solução não suporta mais que 8 vagas, mas foi oq deu
-        wait(5);
+        wait_micro(5);
         int read = bcm2835_gpio_lev(INP_A1_SENSOR_VAGA);
         a->vagas[i] = read;
         printf("vaga %d é %d!\n", i + 1, read);
@@ -319,7 +319,6 @@ EstadoEstacionamento *le_aplica_estado(EstadoEstacionamento *e, int id_andar)
 
 int main()
 {
-    set_env();
     set_level(LEVEL_DEBUG);
     set_time_wait_ignore(0);
 
@@ -361,7 +360,7 @@ int main()
         {
             time_t wait_time = PERIODO_MINIMO_ENTRE_EXECUCOES + last_exec - get_timestamp_now();
             printf("Waiting %lu ms\n", wait_time);
-            wait(wait_time);
+            wait_micro(wait_time);
         }
         last_exec = get_timestamp_now();
     }

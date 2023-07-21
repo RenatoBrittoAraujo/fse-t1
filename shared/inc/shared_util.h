@@ -13,14 +13,6 @@ void log_print(char *str, int level);
 
 char *itoa(int x);
 
-char *get_env_str();
-int get_env_int();
-int is_dev();
-int is_dev_test();
-int is_prod();
-t_error set_env(int);
-t_error get_env(int *);
-
 // if index is not present, may set index to a negative number
 int read_env_int_index(char *name, int index);
 

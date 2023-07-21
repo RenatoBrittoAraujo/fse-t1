@@ -9,7 +9,6 @@
 
 int main()
 {
-    set_env();
     set_level(LEVEL_DEBUG);
     set_time_wait_ignore(0);
 

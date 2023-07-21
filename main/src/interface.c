@@ -1,12 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <interface.h>
 #include <poll.h>
 #include <unistd.h>
 #include <fcntl.h>
 
-#include "shared_util.h"
+#include "shared/inc/shared_util.h"
 #include "shared/inc/proto.h"
+
+#include "main/inc/interface.h"
 
 #define NONE '\0'
 #define TOGGLE_ESTACIONAMENTO '0';

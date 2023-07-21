@@ -1,14 +1,17 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-24ddc0f5d75046c5622901739e7c5dd533143b0c8e959d652212380cedb1ea36.svg)](https://classroom.github.com/a/OJtG4ZlI)
-# FSE Trabalho 1
+# FSE Trabalho 1 - Versão 2
 
-## Mudanças desde entrega inicial
+V2 - Essa é a versão atual do projeto
+V1 - Versão inicial, que não compila
+
+## Mudanças da v2 para entrega inicial v1
 
 Removi tudo que não era relevante pra entrega incial, como:
 - sistema de teste (kkk)
 - ambiente de dev e test (kkkkkk)
 - dockerfile e docker-compose
 
-## 
+## Descrição
 
 RENATO BRITTO ARAUJO 180027239
 

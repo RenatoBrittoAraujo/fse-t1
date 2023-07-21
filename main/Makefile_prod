@@ -25,7 +25,6 @@ $(TARGET): $(OBJECTS)
 	@$(CC) $(INC) $(SHARED_OBJECTS) $^ -o $(TARGET) $(LIB)
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
-	@echo [BUILDING OBJECTS] $@ $<
 	@$(CC) $(INC) -c -o $@ $<
 
 pid_run:

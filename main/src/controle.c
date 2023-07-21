@@ -8,11 +8,14 @@
 #include "shared/inc/shared_util.h"
 #include "shared/inc/threads.h"
 #include "shared/inc/tcp_ip.h"
+#include "shared/inc/comm.h"
 
 #define SEGUNDO 1000 // milissegundos
-#define TEMPO_MAXIMO_CANCELA_ABERTA 10 * SEGUNDO
-#define TEMPO_MAXIMO_DE_DESCONEXAO 10 * SEGUNDO
+#define TEMPO_MAXIMO_CANCELA_ABERTA 10 * SEGUNDO *MILLI
+#define TEMPO_MAXIMO_DE_DESCONEXAO 10 * SEGUNDO *MILLI
 #define PERIODO_MINIMO_EXEC 50
+
+#define DEADLINE_RESPOSTA_DEPENDENTE 500 * MILLI
 
 void set_entradas_inicial()
 {
@@ -26,7 +29,7 @@ bool is_nova_conexao(EstadoEstacionamento *e)
     {
         return true;
     }
-    if (e->tempo_ultima_execucao < get_timestamp_now() - TEMPO_MAXIMO_DE_DESCONEXAO)
+    if (e->tempo_ultima_execucao < get_time_mcs() - TEMPO_MAXIMO_DE_DESCONEXAO)
     {
         return true;
     }
@@ -37,31 +40,20 @@ void envia_mensagem_pra_dependente(ThreadState *ts, void *args)
 {
     log_print("[MAIN THREAD] envia_mensagem_pra_dependente()\n", LEVEL_DEBUG);
     EstadoEstacionamento *e = (EstadoEstacionamento *)args;
-    log_print("[MAIN THREAD] envia msg dep 1\n", LEVEL_DEBUG);
 
     MensagemIn *req = monta_request(e);
-    log_print("[MAIN THREAD] envia msg dep 6\n", LEVEL_DEBUG);
+
     char *req_str = tranformar_request_em_string(req);
-    log_print("[MAIN THREAD] envia msg dep 2\n", LEVEL_DEBUG);
-
-    printf("t_id = %lu t_dep1_id = %lu t_dep2_id = %lu\n", ts->thread_id, e->t_dep_1->thread_id, e->t_dep_2->thread_id);
-    fflush(NULL);
-
-    log_print("[MAIN THREAD] envia msg dep 5\n", LEVEL_DEBUG);
-
     char *ip;
     int porta;
 
-    log_print("[MAIN THREAD] envia msg dep 3\n", LEVEL_DEBUG);
     if (ts->thread_id == e->t_dep_1->thread_id)
     {
-        log_print("[MAIN THREAD] msg pro andar 1\n", LEVEL_DEBUG);
         ip = e->andares[0]->endereco->ip;
         porta = e->andares[0]->endereco->porta;
     }
     else if (ts->thread_id == e->t_dep_2->thread_id)
     {
-        log_print("[MAIN THREAD] msg pro andar 2\n", LEVEL_DEBUG);
         ip = e->andares[1]->endereco->ip;
         porta = e->andares[1]->endereco->porta;
     }
@@ -71,24 +63,20 @@ void envia_mensagem_pra_dependente(ThreadState *ts, void *args)
         exit(1);
     }
 
-    printf("[MAIN THREAD] enviando para %s:%d\n", ip, porta);
-    fflush(NULL);
-
-    log_print("[MAIN THREAD] envia msg deeeep 4\n", LEVEL_DEBUG);
-    char *res_str = message_tcp_ip_port(req_str, ip, porta);
-    log_print("[MAIN THREAD] envia msg deeeep 7\n", LEVEL_DEBUG);
+    char *res_str = listen_tcp_ip_port(req_str, ip, porta);
     MensagemOut *res = parse_string_resposta(res_str);
 
-    log_print("[MAIN THREAD] envia msg deeep 3\n", LEVEL_DEBUG);
     if (ts->thread_id == e->t_dep_1->thread_id)
     {
         log_print("[MAIN THREAD] resposta do andar 1\n", LEVEL_DEBUG);
-        memcpy((void *)e->t_dep_1->memory->out, (void *)res->e, sizeof(EstadoEstacionamento));
+        void *t_res = wait_thread_response_with_deadline(e->t_dep_1, DEADLINE_RESPOSTA_DEPENDENTE);
+        memcpy(t_res, (void *)res->e, sizeof(EstadoEstacionamento));
     }
     else if (ts->thread_id == e->t_dep_2->thread_id)
     {
         log_print("[MAIN THREAD] resposta do andar 2\n", LEVEL_DEBUG);
-        memcpy((void *)e->t_dep_2->memory->out, (void *)res->e, sizeof(EstadoEstacionamento));
+        void *t_res = wait_thread_response_with_deadline(e->t_dep_2, DEADLINE_RESPOSTA_DEPENDENTE);
+        memcpy(t_res, (void *)res->e, sizeof(EstadoEstacionamento));
     }
     else
     {
@@ -101,14 +89,12 @@ ThreadState *criar_thread_comunicar_dependente(EstadoEstacionamento *e)
 {
     log_print("[MAIN] criar_thread_comunicar_dependente()\n", LEVEL_DEBUG);
 
-    ThreadState *t = create_thread_state();
+    ThreadState *t = create_thread_state(-1);
+    t->response_size = sizeof(EstadoEstacionamento);
     t->routine = envia_mensagem_pra_dependente;
-    t->memory->in = copiar_estado(e);
-    t->memory->out = copiar_estado(e);
     t->args = copiar_estado(e);
 
     log_print("[MAIN] thread criada\n", LEVEL_DEBUG);
-
     return t;
 }
 
@@ -200,7 +186,7 @@ EstadoEstacionamento *controla(EstadoEstacionamento *e)
         e->t_dep_1 = criar_thread_comunicar_dependente(e);
         e->t_dep_2 = criar_thread_comunicar_dependente(e);
     }
-    e->tempo_ultima_execucao = get_timestamp_now();
+    e->tempo_ultima_execucao = get_time_mcs();
 
     // ========= CANCELAS
 
@@ -228,21 +214,22 @@ EstadoEstacionamento *controla(EstadoEstacionamento *e)
     }
     e->estacionamento_lotado = is_todas_as_vagas_ocupadas(e);
 
-    log_print("[MAIN CONTROLA] enviando mensagem pra dependente\n", LEVEL_DEBUG);
-
-    set_thread_args(e->t_dep_1, e);
+    log_print("[MAIN CONTROLA] enviando mensagem pra dependente 1\n", LEVEL_DEBUG);
+    e->t_dep_1->args = e;
     start_thread(e->t_dep_1);
-    set_thread_args(e->t_dep_2, e);
+
+    log_print("[MAIN CONTROLA] enviando mensagem pra dependente 2\n", LEVEL_DEBUG);
+    e->t_dep_2->args = e;
     start_thread(e->t_dep_2);
 
     // ========= FIM
 
-    time_t esperar_proximo = get_timestamp_now() - e->tempo_ultima_execucao - PERIODO_MINIMO_EXEC;
+    time_t esperar_proximo = get_time_mcs() - e->tempo_ultima_execucao - PERIODO_MINIMO_EXEC;
 
     if (esperar_proximo > 0)
     {
-        log_print("[MAIN CONTROLA] wait()\n", LEVEL_DEBUG);
-        wait(esperar_proximo);
+        log_print("[MAIN CONTROLA] wait_micro()\n", LEVEL_DEBUG);
+        wait_micro(esperar_proximo);
     }
 
     log_print("[MAIN CONTROLA] fim\n", LEVEL_DEBUG);
