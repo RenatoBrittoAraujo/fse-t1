@@ -1,0 +1,30 @@
+Makefile_dev_test:25: warning: overriding recipe for target 'dev_test_dep'
+Makefile_dev_test:19: warning: ignoring old recipe for target 'dev_test_dep'
+src/garbage_collector.c: In function ‘cleanup_garbage’:
+src/garbage_collector.c:64:9: warning: implicit declaration of function ‘close’; did you mean ‘pclose’? [-Wimplicit-function-declaration]
+   64 |         close(g->files->fd);
+      |         ^~~~~
+      |         pclose
+src/threads.c: In function ‘thread_procedure’:
+src/threads.c:36:16: warning: returning ‘t_error’ {aka ‘long unsigned int’} from a function with return type ‘void *’ makes pointer from integer without a cast [-Wint-conversion]
+   36 |         return handle_error(SHARED_THREADS_ERROR_PARAM_NOT_FOUND,
+      |                ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+   37 |                             "[shared.threads] ts->routine is not defined");
+      |                             ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+src/threads.c: In function ‘force_thread_end’:
+src/threads.c:93:24: warning: passing argument 1 of ‘pthread_exit’ makes pointer from integer without a cast [-Wint-conversion]
+   93 |         pthread_exit(ts->thread_id);
+      |                      ~~^~~~~~~~~~~
+      |                        |
+      |                        pthread_t {aka long unsigned int}
+In file included from src/threads.c:5:
+/usr/include/pthread.h:211:33: note: expected ‘void *’ but argument is of type ‘pthread_t’ {aka ‘long unsigned int’}
+  211 | extern void pthread_exit (void *__retval) __attribute__ ((__noreturn__));
+      |                           ~~~~~~^~~~~~~~
+src/main.c:7:10: fatal error: shared/inc/time.h: No such file or directory
+    7 | #include "shared/inc/time.h"
+      |          ^~~~~~~~~~~~~~~~~~~
+compilation terminated.
+make[2]: *** [Makefile_prod:33: obj/main.o] Error 1
+make[1]: *** [Makefile:11: prod] Error 2
+make: *** [Makefile:12: all] Error 2

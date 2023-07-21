@@ -1,0 +1,42 @@
+# runs 3 containers for 3 instances of rasp 
+version: '3'
+
+services:
+  main:
+    container_name: fse-t1-main
+    build: main
+    restart: "unless-stopped"
+    ports:
+      - '6967:80'
+    volumes:
+      - ./:/app
+    depends_on:
+      - dep1
+      - dep2
+    command: make -C app all_main_prod
+
+  dep1:
+    container_name: fse-t1-dep1
+    build: dep
+    environment:
+      # andar terreo
+      ID_ANDAR: 1
+    restart: "unless-stopped"
+    ports:
+      - '6968:80'
+    volumes:
+      - ./:/app
+    command: make -C app all_dep_prod
+
+  dep2:
+    container_name: fse-t1-dep2
+    build: dep
+    environment:
+      # segundo andar
+      ID_ANDAR: 2
+    restart: "unless-stopped"
+    ports:
+      - '6969:80'
+    volumes:
+      - ./:/app
+    command: make -C app all_dep_prod

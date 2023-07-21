@@ -1,0 +1,97 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "vgdb",
+      "request": "launch",
+      "name": "vgdb main prod",
+      "debug": "verbose",
+      "program": "${workspaceFolder}/main/main_prod",
+      "args": [],
+      "cwd": "${workspaceFolder}/main",
+      "env": {
+        "ENV": "PROD",
+        "IP_MAIN": "127.0.0.1",
+        "PORTA_MAIN": "6967",
+        "NUM_ANDARES": "2",
+        "ID_ANDAR_DA_ENTRADA": "1",
+        "IP_ANDAR_1": "127.0.0.1",
+        "PORTA_ANDAR_1": "6968",
+        "NUM_VAGAS_ANDAR_1": "8",
+        "IP_ANDAR_2": "127.0.0.1",
+        "PORTA_ANDAR_2": "6969",
+        "NUM_VAGAS_ANDAR_2": "8"
+      }
+    },
+    {
+      "type": "vgdb",
+      "request": "launch",
+      "name": "vgdb main dev",
+      "debug": "verbose",
+      "program": "${workspaceFolder}/main/main_dev",
+      "args": [],
+      "cwd": "${workspaceFolder}/main",
+      "env": {
+        "ENV": "DEV",
+        "IP_MAIN": "127.0.0.1",
+        "PORTA_MAIN": "6967",
+        "NUM_ANDARES": "2",
+        "ID_ANDAR_DA_ENTRADA": "1",
+        "IP_ANDAR_1": "127.0.0.1",
+        "PORTA_ANDAR_1": "6968",
+        "NUM_VAGAS_ANDAR_1": "8",
+        "IP_ANDAR_2": "127.0.0.1",
+        "PORTA_ANDAR_2": "6969",
+        "NUM_VAGAS_ANDAR_2": "8"
+      }
+    },
+    {
+      "type": "vgdb",
+      "request": "launch",
+      "name": "vgdb dep dev",
+      "debug": "verbose",
+      "program": "${workspaceFolder}/dep/dep_dev",
+      "args": [],
+      "cwd": "${workspaceFolder}/dep",
+      "startupCmds": [
+        "make all_dep_dev"
+      ],
+      "externalConsole": true,
+      "env": {
+        "ENV": "PROD",
+        "IP_MAIN": "127.0.0.1",
+        "PORTA_MAIN": "6967",
+        "NUM_ANDARES": "2",
+        "ID_ANDAR_DA_ENTRADA": "1",
+        "IP_ANDAR_1": "127.0.0.1",
+        "PORTA_ANDAR_1": "6968",
+        "NUM_VAGAS_ANDAR_1": "8",
+        "IP_ANDAR_2": "127.0.0.1",
+        "PORTA_ANDAR_2": "6969",
+        "NUM_VAGAS_ANDAR_2": "8"
+      }
+    },
+    {
+      "type": "vgdb",
+      "request": "launch",
+      "name": "vgdb dep prod",
+      "debug": "verbose",
+      "program": "${workspaceFolder}/dep/dep",
+      "args": [],
+      "cwd": "${workspaceFolder}/dep",
+      "env": {
+        "ENV": "PROD",
+        "IP_MAIN": "127.0.0.1",
+        "PORTA_MAIN": "6967",
+        "NUM_ANDARES": "2",
+        "ID_ANDAR_DA_ENTRADA": "1",
+        "IP_ANDAR_1": "127.0.0.1",
+        "PORTA_ANDAR_1": "6968",
+        "NUM_VAGAS_ANDAR_1": "8",
+        "IP_ANDAR_2": "127.0.0.1",
+        "PORTA_ANDAR_2": "6969",
+        "NUM_VAGAS_ANDAR_2": "8"
+      }
+    }
+  ]
+}
