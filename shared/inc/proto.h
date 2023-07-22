@@ -10,9 +10,14 @@
 #define SENSOR_DE_PASSAGEM_DESATIVADO 0
 #define ESPERANDO_OUTRO_SENSOR 1
 
-#define TEMPO_MAXIMO_CANCELA_ABERTA 10 * SECOND
-#define TEMPO_MAXIMO_DE_DESCONEXAO 10 * SECOND
-#define PERIODO_MINIMO_EXEC 50
+#define MCS_MAXIMO_CANCELA_ABERTA 10 * SECOND *MILLI
+#define MCS_DESCONEXAO 10 * SECOND *MILLI
+#define MCS_PERIODO_MINIMO_EXEC 50 * MILLI
+#define MCS_DEADLINE_RESPOSTA_DEPENDENTE 500 * MILLI
+
+#define ATOR_MAIN 1
+#define ATOR_DEP1 2
+#define ATOR_DEP2 3
 
 // ======= CONTROLE
 struct Endereco
@@ -54,6 +59,9 @@ typedef struct EstadoEntrada EstadoEntrada;
 
 struct EstadoEstacionamento
 {
+    // ATOR_MAIN, ATOR_DEP1, ATOR_DEP2
+    int ator_atual;
+
     int num_andares;
     int tempo_ultima_execucao;
 
@@ -95,7 +103,6 @@ struct MensagemIn
 };
 typedef struct MensagemIn MensagemIn;
 
-
 // ======= INTERFACE
 struct EstadoInterface
 {
@@ -103,7 +110,7 @@ struct EstadoInterface
 };
 typedef struct EstadoInterface EstadoInterface;
 
-EstadoEstacionamento *inicializar_estado(char* env_name);
-EstadoEstacionamento *copiar_estado(EstadoEstacionamento* e);
+EstadoEstacionamento *inicializar_estado(char *env_name, int ator_atual);
+EstadoEstacionamento *copiar_estado(EstadoEstacionamento *e);
 
 #endif

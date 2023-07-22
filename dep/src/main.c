@@ -339,7 +339,12 @@ int main()
     char BUFF[1000];
     sprintf(BUFF, "%s%d", "ANDAR_", id_andar);
     log_print(BUFF, 1);
-    EstadoEstacionamento *e = inicializar_estado(BUFF);
+
+    int ator_atual = ATOR_DEP1;
+    if (id_andar == 2)
+        ator_atual = ATOR_DEP2;
+
+    EstadoEstacionamento *e = inicializar_estado(BUFF, ator_atual);
 
     log_print("[DEP MAIN] estado inicializado\n", LEVEL_INFO);
 

@@ -54,7 +54,7 @@ t_error call_tcp_ip_port(char *request, char *ip, int port, char *res_buff)
     return NO_ERROR;
 }
 
-t_error listen_tcp_ip_port(char *(*get_response)(void *), char *ip, int port)
+t_error listen_tcp_ip_port(char *ip, int port, char *(*get_response)(void *, void *), void *req, void *res_data)
 {
     log_print("[shared.tcp_ip] [listen_tcp_ip_port] listen_tcp_ip_port\n", LEVEL_DEBUG);
 
@@ -102,7 +102,7 @@ t_error listen_tcp_ip_port(char *(*get_response)(void *), char *ip, int port)
         log_print("[shared.tcp_ip] [listen_tcp_ip_port] request received\n", LEVEL_DEBUG);
 
         valread = read(new_socket, buffer, 1024);
-        char *response = get_response(buffer);
+        char *response = get_response(req, res_data);
         log_print("[shared.tcp_ip] [listen_tcp_ip_port] response created\n", LEVEL_DEBUG);
 
         send(new_socket, &response, strlen(response), 0);

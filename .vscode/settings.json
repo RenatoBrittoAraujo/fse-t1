@@ -16,7 +16,8 @@
         "stdlib.h": "c",
         "garbage_collector.h": "c",
         "interface.h": "c",
-        "typeinfo": "c"
+        "typeinfo": "c",
+        "comm.h": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "enabled"
 }

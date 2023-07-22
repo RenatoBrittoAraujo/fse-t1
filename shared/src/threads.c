@@ -33,8 +33,8 @@ void *thread_procedure(void *ts_args)
     }
     if (ts->routine == NULL)
     {
-        return handle_error(SHARED_THREADS_ERROR_PARAM_NOT_FOUND,
-                            "[shared.threads] ts->routine is not defined");
+        log_print("[shared.threads] thread_procedure: routine is null", LEVEL_ERROR);
+        return NULL;
     }
     ts->routine(params->ts, ts->args);
     if (params->ts->optional_after != NULL)

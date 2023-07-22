@@ -10,13 +10,6 @@
 #include "shared/inc/tcp_ip.h"
 #include "shared/inc/comm.h"
 
-#define SEGUNDO 1000 // milissegundos
-#define TEMPO_MAXIMO_CANCELA_ABERTA 10 * SEGUNDO *MILLI
-#define TEMPO_MAXIMO_DE_DESCONEXAO 10 * SEGUNDO *MILLI
-#define PERIODO_MINIMO_EXEC 50
-
-#define DEADLINE_RESPOSTA_DEPENDENTE 500 * MILLI
-
 void set_entradas_inicial()
 {
     log_print("[MAIN] set_entradas_inicial()\n", LEVEL_DEBUG);
@@ -29,60 +22,66 @@ bool is_nova_conexao(EstadoEstacionamento *e)
     {
         return true;
     }
-    if (e->tempo_ultima_execucao < get_time_mcs() - TEMPO_MAXIMO_DE_DESCONEXAO)
+    if (e->tempo_ultima_execucao < get_time_mcs() - MCS_DESCONEXAO)
     {
         return true;
     }
     return false;
 }
 
-void envia_mensagem_pra_dependente(ThreadState *ts, void *args)
+char *get_response(void *req, void *res_data)
 {
-    log_print("[MAIN THREAD] envia_mensagem_pra_dependente()\n", LEVEL_DEBUG);
-    EstadoEstacionamento *e = (EstadoEstacionamento *)args;
+    // le a resposta do servidor dependente
+    MensagemOut *request_dependente = parse_string_resposta((char *)req);
+    EstadoEstacionamento *novo_estado_dependente = (EstadoEstacionamento *)request_dependente->e;
+    memcpy(req, novo_estado_dependente, sizeof(EstadoEstacionamento));
 
-    MensagemIn *req = monta_request(e);
+    // envia a resposta do servidor principal
+    MensagemIn *res = monta_request((EstadoEstacionamento *)res_data);
+    char *res_str = tranformar_request_em_string(res);
+    return res_str;
+}
 
-    char *req_str = tranformar_request_em_string(req);
+void escuta_dependente(ThreadState *ts, void *args)
+{
+    log_print("[MAIN THREAD] escuta_dependente()\n", LEVEL_DEBUG);
+
+    EstadoEstacionamento *estado_main = (EstadoEstacionamento *)args;
+    EstadoEstacionamento *estado_dep = NULL;
+
     char *ip;
     int porta;
 
-    if (ts->thread_id == e->t_dep_1->thread_id)
+    int dependente = -1;
+    dependente = ts->thread_id == estado_main->t_dep_1->thread_id ? ATOR_DEP1 : dependente;
+    dependente = ts->thread_id == estado_main->t_dep_2->thread_id ? ATOR_DEP2 : dependente;
+
+    switch (dependente)
     {
-        ip = e->andares[0]->endereco->ip;
-        porta = e->andares[0]->endereco->porta;
-    }
-    else if (ts->thread_id == e->t_dep_2->thread_id)
-    {
-        ip = e->andares[1]->endereco->ip;
-        porta = e->andares[1]->endereco->porta;
-    }
-    else
-    {
-        log_print("[MAIN THREAD] ip e porta da mensagem não encontrado\n", LEVEL_ERROR);
-        exit(1);
+    case ATOR_DEP1:
+        ip = estado_main->andares[0]->endereco->ip;
+        porta = estado_main->andares[0]->endereco->porta;
+        break;
+    case ATOR_DEP2:
+        ip = estado_main->andares[1]->endereco->ip;
+        porta = estado_main->andares[1]->endereco->porta;
+        break;
+    default:
+        printf("[MAIN THREAD] ator para se escutar desconhecido. thread_id: %d\n", ts->thread_id);
+        fflush(NULL);
+        pthread_exit(NULL);
     }
 
-    char *res_str = listen_tcp_ip_port(req_str, ip, porta);
-    MensagemOut *res = parse_string_resposta(res_str);
+    t_error err = listen_tcp_ip_port(get_response, ip, porta, (void *)estado_main, (void *)estado_dep);
 
-    if (ts->thread_id == e->t_dep_1->thread_id)
+    if (err != NO_ERROR)
     {
-        log_print("[MAIN THREAD] resposta do andar 1\n", LEVEL_DEBUG);
-        void *t_res = wait_thread_response_with_deadline(e->t_dep_1, DEADLINE_RESPOSTA_DEPENDENTE);
-        memcpy(t_res, (void *)res->e, sizeof(EstadoEstacionamento));
+        printf("[MAIN THREAD] erro %lu no listen_tcp_ip_port() do dependente\n", err);
+        fflush(NULL);
+        pthread_exit(NULL);
     }
-    else if (ts->thread_id == e->t_dep_2->thread_id)
-    {
-        log_print("[MAIN THREAD] resposta do andar 2\n", LEVEL_DEBUG);
-        void *t_res = wait_thread_response_with_deadline(e->t_dep_2, DEADLINE_RESPOSTA_DEPENDENTE);
-        memcpy(t_res, (void *)res->e, sizeof(EstadoEstacionamento));
-    }
-    else
-    {
-        log_print("[ERROR] [MAIN THREAD] endereco para esrever resposta não encontrado\n", LEVEL_ERROR);
-        exit(1);
-    }
+
+    pthread_exit(estado_dep);
 }
 
 ThreadState *criar_thread_comunicar_dependente(EstadoEstacionamento *e)
@@ -91,7 +90,7 @@ ThreadState *criar_thread_comunicar_dependente(EstadoEstacionamento *e)
 
     ThreadState *t = create_thread_state(-1);
     t->response_size = sizeof(EstadoEstacionamento);
-    t->routine = envia_mensagem_pra_dependente;
+    t->routine = escuta_dependente;
     t->args = copiar_estado(e);
 
     log_print("[MAIN] thread criada\n", LEVEL_DEBUG);
@@ -146,7 +145,7 @@ int get_estado_motor_cancela(time_t sensor_de_presenca, time_t sensor_de_passage
     log_print("[MAIN] get_estado_motor_cancela()\n", LEVEL_DEBUG);
 
     // se o sensor de presenca capturou algo ou o sensor de passagem está capturando algo
-    if (is_newer(TEMPO_MAXIMO_CANCELA_ABERTA + sensor_de_presenca) || is_newer(TEMPO_MAXIMO_CANCELA_ABERTA + sensor_de_passagem))
+    if (is_newer(MCS_MAXIMO_CANCELA_ABERTA + sensor_de_presenca) || is_newer(MCS_MAXIMO_CANCELA_ABERTA + sensor_de_passagem))
     {
         // cancela levanta
         return 1;
@@ -159,13 +158,13 @@ int decidir_estado_motor_cancela_saida(EstadoEstacionamento *e)
 {
     log_print("[MAIN] decidir_estado_motor_cancela_saida()\n", LEVEL_DEBUG);
 
-    if (is_newer(TEMPO_MAXIMO_CANCELA_ABERTA + e->entrada->sensor_de_presenca_saida))
+    if (is_newer(MCS_MAXIMO_CANCELA_ABERTA + e->entrada->sensor_de_presenca_saida))
     {
         e->entrada->motor_saida_ligado = 1;
     }
     else
     {
-        if (!is_newer(TEMPO_MAXIMO_CANCELA_ABERTA + e->entrada->sensor_de_passagem_saida))
+        if (!is_newer(MCS_MAXIMO_CANCELA_ABERTA + e->entrada->sensor_de_passagem_saida))
         {
             e->entrada->motor_saida_ligado = 0;
         }
@@ -180,7 +179,7 @@ EstadoEstacionamento *controla(EstadoEstacionamento *e)
 
     if (is_nova_conexao(e))
     {
-        e = inicializar_estado("MAIN");
+        e = inicializar_estado("MAIN", ATOR_MAIN);
         set_entradas_inicial();
 
         e->t_dep_1 = criar_thread_comunicar_dependente(e);
@@ -214,17 +213,41 @@ EstadoEstacionamento *controla(EstadoEstacionamento *e)
     }
     e->estacionamento_lotado = is_todas_as_vagas_ocupadas(e);
 
-    log_print("[MAIN CONTROLA] enviando mensagem pra dependente 1\n", LEVEL_DEBUG);
-    e->t_dep_1->args = e;
+    log_print("[MAIN CONTROLA] escuta dependentes\n", LEVEL_DEBUG);
+    e->t_dep_1->args = e->t_dep_2->args = e;
     start_thread(e->t_dep_1);
-
-    log_print("[MAIN CONTROLA] enviando mensagem pra dependente 2\n", LEVEL_DEBUG);
-    e->t_dep_2->args = e;
     start_thread(e->t_dep_2);
+
+    log_print("[MAIN CONTROLA] esperando mensagem do dependente 1\n", LEVEL_DEBUG);
+    void *res_dep_1_void_p = wait_thread_response_with_deadline(e->t_dep_1, MCS_DEADLINE_RESPOSTA_DEPENDENTE);
+
+    log_print("[MAIN CONTROLA] esperando mensagem do dependente 2\n", LEVEL_DEBUG);
+    void *res_dep_2_void_p = wait_thread_response_with_deadline(e->t_dep_2, MCS_DEADLINE_RESPOSTA_DEPENDENTE);
+
+    if (res_dep_1_void_p == NULL)
+    {
+        log_print("[MAIN CONTROLA] dependente 1 não respondeu\n", LEVEL_ERROR);
+        exit(1);
+    }
+
+    if (res_dep_2_void_p == NULL)
+    {
+        log_print("[MAIN CONTROLA] dependente 2 não respondeu\n", LEVEL_ERROR);
+        exit(1);
+    }
+
+    EstadoEstacionamento *res_dep_1 = (EstadoEstacionamento *)res_dep_1_void_p;
+    EstadoEstacionamento *res_dep_2 = (EstadoEstacionamento *)res_dep_2_void_p;
+
+    log_print("[MAIN CONTROLA] respostas recebidas, combinando resultados\n", LEVEL_DEBUG);
+
+    // [TODO] join estados
+
+    log_print("[MAIN CONTROLA] resultados combinados, novo estado gerado\n", LEVEL_DEBUG);
 
     // ========= FIM
 
-    time_t esperar_proximo = get_time_mcs() - e->tempo_ultima_execucao - PERIODO_MINIMO_EXEC;
+    time_t esperar_proximo = get_time_mcs() - e->tempo_ultima_execucao - MCS_PERIODO_MINIMO_EXEC;
 
     if (esperar_proximo > 0)
     {

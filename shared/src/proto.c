@@ -4,7 +4,7 @@
 #include "shared/inc/proto.h"
 #include "shared/inc/shared_util.h"
 
-EstadoEstacionamento *inicializar_estado(char *env_name)
+EstadoEstacionamento *inicializar_estado(char *env_name, int ator_atual)
 {
     log_print("incializar_estado\n", LEVEL_DEBUG);
     char buff[1000];
@@ -20,6 +20,8 @@ EstadoEstacionamento *inicializar_estado(char *env_name)
 
     EstadoEstacionamento *e = (EstadoEstacionamento *)malloc(sizeof(EstadoEstacionamento));
 
+    e->ator_atual = ator_atual;
+
     Endereco *end = (Endereco *)malloc(sizeof(Endereco));
 
     end->ip = ip;
@@ -27,7 +29,7 @@ EstadoEstacionamento *inicializar_estado(char *env_name)
     e->endereco = end;
 
     // força o tempo inicial a sempre estar invalido
-    e->tempo_ultima_execucao = -TEMPO_MAXIMO_DE_DESCONEXAO - 1;
+    e->tempo_ultima_execucao = -MCS_DESCONEXAO - 1;
     e->num_andares = num_andares;
     e->andares = (EstadoAndar **)malloc(sizeof(EstadoAndar *) *
                                         num_andares);
