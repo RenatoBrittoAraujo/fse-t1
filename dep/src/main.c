@@ -179,23 +179,27 @@ void set_resposta(EstadoEstacionamento *e)
 void escuta_main(ThreadState *ts, void *args)
 {
     log_print("[DEP] escuta_main\n", LEVEL_DEBUG);
-    EstadoEstacionamento *e = (EstadoEstacionamento *)args;
-    printf("ABRINDO IP:PORTA %s:%d\n", e->endereco->ip, e->endereco->porta);
+
+    EstadoEstacionamento *req = (EstadoEstacionamento *)args;
+    
+    printf("FAZ REQUEST PARA IP:PORTA %s:%d\n", e->endereco->ip, e->endereco->porta);
+
     fflush(NULL);
     log_print("[DEP] deu parse do estacionamento\n", LEVEL_DEBUG);
     listen_tcp_ip_port(get_resposta, e->endereco->ip, e->endereco->porta);
     log_print("[DEP] escutando porta!\n", LEVEL_DEBUG);
+
+    pthread_exit(res);
+    
 }
 
-void abrir_thread_server_dependente(EstadoEstacionamento *e)
+ThreadState *ThreadState *t = abrir_thread_server_dependente(EstadoEstacionamento * e)
 {
-    log_print("[DEP] abrir_thread_server_dependente\n", LEVEL_DEBUG);
-
+    log_print("[DEP] ThreadState* t = abrir_thread_server_dependente\n", LEVEL_DEBUG);
     ThreadState *t = create_thread_state(-1);
     e->t_main = t;
     t->routine = escuta_main;
-    t->args = e;
-    start_thread(t);
+    return t;
 }
 
 int atualiza_tempo(time_t *attr, int atualizar)
@@ -348,7 +352,7 @@ int main()
 
     log_print("[DEP MAIN] estado inicializado\n", LEVEL_INFO);
 
-    abrir_thread_server_dependente(e);
+    ThreadState *t = abrir_thread_server_dependente(e);
     log_print("[DEP MAIN] thread de abrir porta chamada\n", LEVEL_DEBUG);
 
     time_t last_exec = 0;
@@ -357,10 +361,23 @@ int main()
     {
         log_print("[DEP MAIN] chama le aplica estado\n", LEVEL_DEBUG);
         e = le_aplica_estado(e, id_andar);
-        log_print("[DEP MAIN] le aplica estado retornou!!!\n", LEVEL_DEBUG);
-        set_resposta(e);
 
-        printf("ESCUTANDO %s:%d\n", e->endereco->ip, e->endereco->porta);
+        log_print("[DEP MAIN] configura request para servidor principal\n", LEVEL_DEBUG);
+        t->args = e;
+
+        start_thread(t);
+        void *res = wait_thread_response_with_deadline(t, MCS_DESCONEXAO);
+
+        if (res == NULL)
+        {
+            log_print("[DEP MAIN] servidor principal não respondeu\n", LEVEL_DEBUG);
+        }
+        else
+        {
+            log_print("[DEP MAIN] servidor principal respondeu, novo estado registrado\n", LEVEL_DEBUG);
+            e = (EstadoEstacionamento *)res;
+        }
+
         if (is_newer(PERIODO_MINIMO_ENTRE_EXECUCOES + last_exec))
         {
             time_t wait_time = PERIODO_MINIMO_ENTRE_EXECUCOES + last_exec - get_timestamp_now();

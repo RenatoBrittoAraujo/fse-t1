@@ -97,17 +97,6 @@ ThreadState *criar_thread_comunicar_dependente(EstadoEstacionamento *e)
     return t;
 }
 
-void set_thread_args(ThreadState *t, EstadoEstacionamento *e)
-{
-    log_print("[MAIN] set_thread_args()\n", LEVEL_DEBUG);
-    printf("e->tdep_1 e->tdpe2%p %p\n", e->t_dep_1, e->t_dep_2);
-    fflush(NULL);
-    t->args = (void *)malloc(sizeof(EstadoEstacionamento));
-    log_print("[MAIN] set_thread_args 2\n", LEVEL_DEBUG);
-    memcpy(t->args, e, sizeof(EstadoEstacionamento));
-    log_print("[MAIN] set_thread_args ret\n", LEVEL_DEBUG);
-}
-
 // ================== MODIFICAR ESTADO ==================
 
 int is_todas_as_vagas_andar_ocupadas(EstadoAndar *a)
