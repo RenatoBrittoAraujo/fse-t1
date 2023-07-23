@@ -17,7 +17,7 @@
 #define SHARED_TCP_IP_ERROR_LISTEN_FAILED 1005
 #define SHARED_TCP_IP_ERROR_ACCEPT_FAILED 1006
 
-#define DEBUG 1
+#define DEBUG 0
 #define IF_DEBUG if(DEBUG)
 
 // res_buff may be NULL, response will not be set

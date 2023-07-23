@@ -3,11 +3,22 @@
 #include <poll.h>
 #include <unistd.h>
 #include <fcntl.h>
-#include <curses.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <sys/select.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <unistd.h>
+#include <string.h>
+#include <errno.h>
+#include <ncurses.h>
+#define MAXBYTES 80
 
 #include "shared/inc/shared_util.h"
 #include "shared/inc/time.h"
 #include "shared/inc/proto.h"
+#include "shared/inc/threads.h"
 
 #include "main/inc/interface.h"
 
@@ -15,50 +26,90 @@
 #define TOGGLE_ESTACIONAMENTO '0';
 #define DRAW_FREQUENCY 100
 
-int initialized = 0;
-time_t last_draw = 0;
-
-int should_draw()
+void get_inp_char(ThreadState *ts, void *args)
 {
-    int now = get_time_mcs();
-    printf("       timestamp: %ld      \n", now);
-    printf("       draw_freq: %ld      \n", DRAW_FREQUENCY);
-    printf("       last_draw: %ld      \n", last_draw);
-    printf("       last_draw + DRAW_FREQUENCY: %ld      \n", last_draw + DRAW_FREQUENCY);
-    printf("       last_draw + DRAW_FREQUENCY - now: %ld      \n", last_draw + DRAW_FREQUENCY - now);
-    fflush(NULL);
-    return last_draw + DRAW_FREQUENCY <= now;
-}
+    // fd_set readfds;
+    // int num_readable;
+    // struct timeval tv;
+    // int num_bytes;
+    // char buf[MAXBYTES];
+    // int fd_stdin;
 
-void init()
-{
-    if (!initialized)
-    {
-        initialized = 1;
-    }
-}
+    // fd_stdin = fileno(stdin);
 
-// lê o buffer de input. Retorna NONE se nada for lido.
-// note que apenas 1 caractere é lido, não deve ser problema.
-char get_inp_char()
-{
-    int c = getch();
-    printf("READ CHARACTER: %d\n", c);
-    if (c != EOF)
-        return c;
-    return NONE;
-    // char buff[1];
-    // if (read(0, buff, 1) < 1)
+    // FD_ZERO(&readfds);
+    // FD_SET(fileno(stdin), &readfds);
+
+    // tv.tv_usec = 1;
+
+    // num_readable = select(fd_stdin + 1, &readfds, NULL, NULL, &tv);
+    // if (num_readable == -1)
+    // {
     //     return NONE;
-    // return buff[0];
+    // }
+    // if (num_readable == 0)
+    // {
+    //     return NONE;
+    // }
+    // else
+    // {
+    //     num_bytes = read(fd_stdin, buf, MAXBYTES);
+    //     if (num_bytes < 0)
+    //     {
+    //         fprintf(stderr, "\nError on read : %s\n", strerror(errno));
+    //         exit(1);
+    //     }
+    //     /* process command, maybe by sscanf */
+    //     printf("\nRead %d bytes\n", num_bytes);
+    //     return buf[0];
+    // }
+
+    // return NONE;
+    // }
+
+    // char get_inp_char()
+    // {
+    // char c;
+    // scanf("%c", &c);
+    // char buffer[1];
+    // read(STDIN_FILENO, buffer, 1);
+
+    // cbreak();    // Disable line buffering (pass characters immediately to the program)
+    // noecho();    // Don't echo user input to the screen
+
+    // Initialize ncurses again for another session
+    initscr();
+    // newterm();
+    // stdscr = newterm(NULL, stdout, stdin);
+    cbreak(); // Disable line buffering
+    noecho(); // Disable echoing of user input
+
+    // Your big program logic for the second session...
+
+    // Get user input again
+
+    int c = getch();
+    refresh(); // Refresh the screen
+
+    // End ncurses for the second session
+    endwin();
+    pthread_exit((void *)c);
+
+    // return c;
+    //     char *line = NULL;
+    //     size_t linecap = 0;
+    //     ssize_t linelen;
+    //     while ((linelen = getline(&line, &linecap, 0)) > 0)
+    //         fwrite(line, linelen, 1, stdout);
+    //     printf("line: %s %d\n", line, linelen);
+    //     fflush(NULL);
+    //     return line[0];
 }
 
 void desenha_interface(Estado *e)
 {
-    if (!should_draw())
-    {
-    }
     // ====== DISPLAY
+    printf("                     TIMETAMP = %lu                  \n", get_time_mcs());
     printf("|------------ GERENCIADOR DE ESTACIONAMENTO ------------|\n");
 
     printf("|                numero de andares: %d                   |\n", e->num_andares);
@@ -86,11 +137,10 @@ void desenha_interface(Estado *e)
         printf("             |\n");
         int fechado = id_andar == 1 ? e->andar_1_fechado : e->andar_2_fechado;
         int lotado = id_andar == 1 ? e->andar_1_lotado : e->andar_2_lotado;
-        printf("|          lotado: %d              fechado: %d            |\n", fechado, lotado);
+        printf("|          lotado: %d              fechado: %d            |\n", lotado, fechado);
         fflush(NULL);
     }
     printf("|-------------------------------------------------------|\n\n");
-    last_draw = get_time_mcs();
 }
 
 Estado *ler_comando(Estado *e)
@@ -98,54 +148,80 @@ Estado *ler_comando(Estado *e)
 
     printf("Comandos:\n");
 
+    printf("\tr - ATUALIZAR tela\n");
     if (e->estacionamento_fechado)
-        printf("\t0 - abrir estacionamento\n");
+        printf("\t0 - ABRIR estacionamento\n");
     else
-        printf("\t0 - fechar estacionamento\n");
+        printf("\t0 - FECHAR estacionamento\n");
 
     for (int id_andar = 1; id_andar <= e->num_andares; id_andar++)
     {
-        printf("\t%d - fechar andar %d \n", id_andar, id_andar);
+        int fechado = id_andar == 1 ? e->andar_1_fechado : e->andar_2_fechado;
+        printf("\t%d - %s andar %d \n", id_andar, fechado ? "ABRIR" : "FECHAR", id_andar);
     }
 
-    char c = get_inp_char();
+    ThreadState *t = create_thread_state(-1);
+    t->routine = get_inp_char;
+    start_thread(t);
+    void *res = wait_thread_response_with_deadline(t, 1000);
+    char c = ((char *)res)[0];
     if (c == NONE)
     {
-        printf("nao li nada!\n");
         return;
     }
-    printf("EU LI O COMANDO: %d %c\n", c, c);
+
+    int encontrado = 0;
 
     if (c == '0')
     {
+        printf("----- ESTACIONAMENTO FOI %s!\n", e->estacionamento_fechado ? "ABERTO" : "FECHADO");
         e->estacionamento_fechado = -(e->estacionamento_fechado - 1);
+        encontrado = 1;
     }
 
     if (c >= '1' && c <= '9')
     {
+        encontrado = 1;
         int i = c - '0';
         if (i == 1)
         {
-
+            printf("----- ESTACIONAMENTO 1 FOI %s!\n", e->andar_1_fechado ? "ABERTO" : "FECHADO");
             e->andar_1_fechado = 1 - e->andar_1_fechado;
         }
-        else if (i == 2)
+
+        if (i == 2)
         {
-            e->andar_2_fechado = 1 - e->andar_1_fechado;
+            printf("----- ESTACIONAMENTO 2 FOI %s!\n", e->andar_2_fechado ? "ABERTO" : "FECHADO");
+            e->andar_2_fechado = 1 - e->andar_2_fechado;
         }
-        else
-        {
-            printf("Comando invalido, andar %d desconhecido\n", i);
-        }
+    }
+
+    if (c == '\n' || c == 'r')
+    {
+        return e;
+    }
+
+    if (!encontrado)
+    {
+        printf("-----  Comando invalido '%c'\n", c);
     }
 
     return e;
 }
 
+int inicial = 1;
 Estado *processar_interface(Estado *e)
 {
-    init();
     desenha_interface(e);
-    e = ler_comando(e);
+    if (inicial)
+    {
+        inicial = 0;
+    }
+    else
+    {
+
+        e = ler_comando(e);
+    }
+
     return e;
 }

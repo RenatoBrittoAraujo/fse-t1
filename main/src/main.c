@@ -1,3 +1,4 @@
+#include <ncurses.h>
 #include <stdlib.h>
 
 #include "shared/inc/proto.h"
