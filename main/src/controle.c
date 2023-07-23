@@ -32,12 +32,12 @@ bool is_nova_conexao(EstadoEstacionamento *e)
 char *get_response(void *req, void *res_data)
 {
     // le a resposta do servidor dependente
-    MensagemOut *request_dependente = parse_string_resposta((char *)req);
+    EstadoEstacionamento *request_dependente = parse_string_resposta((char *)req);
     EstadoEstacionamento *novo_estado_dependente = (EstadoEstacionamento *)request_dependente->e;
     memcpy(req, novo_estado_dependente, sizeof(EstadoEstacionamento));
 
     // envia a resposta do servidor principal
-    MensagemIn *res = monta_request((EstadoEstacionamento *)res_data);
+    EstadoEstacionamento *res = monta_request((EstadoEstacionamento *)res_data);
     char *res_str = tranformar_request_em_string(res);
     return res_str;
 }

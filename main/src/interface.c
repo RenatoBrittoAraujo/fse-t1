@@ -13,7 +13,6 @@
 #define TOGGLE_ESTACIONAMENTO '0';
 
 int initialized = 0;
-struct EstadoInterface *__ei = NULL;
 
 void init()
 {
@@ -35,96 +34,50 @@ char get_inp_char()
     return buff[0];
 }
 
-EstadoInterface *incializar_estado_interface(EstadoEstacionamento *e)
-{
-    init();
-    EstadoInterface *ei = (EstadoInterface *)malloc(sizeof(EstadoInterface));
-    ei->e = e;
-    return __ei = ei;
-}
-
-void desenha_interface(EstadoInterface *ei)
+void desenha_interface(EstadoEstacionamento *e)
 {
     // ====== DISPLAY
     printf("=== GERENCIADOR DE ESTACIONAMENTO ===");
 
-    printf("| andares: %d |\n", ei->e->num_andares);
+    printf("| andares: %d |\n", e->num_andares);
 
-    printf("| sensor_deteccao_entrada: %ld | sensor_deteccao_saida: %ld |\n", ei->e->entrada->sensor_de_presenca_entrada, ei->e->entrada->sensor_de_presenca_saida);
+    printf("| sensor_deteccao_entrada: %ld | sensor_deteccao_saida: %ld |\n", e->sensor_de_presenca_entrada, e->sensor_de_presenca_saida);
 
-    printf("| sensor_passagem_entrada: %ld | sensor_passagem_saida: %ld |\n", ei->e->entrada->sensor_de_presenca_entrada, ei->e->entrada->sensor_de_presenca_saida);
-    fflush(NULL);
-    
-
-    printf("| sensores_de_subida: ");
-    
-    fflush(NULL);
-    for (int i = 0; i < ei->e->num_andares - 1; i++)
-    {
-        printf("%d ", ei->e->sensor_de_subida_de_andar[i]);
-        
-        fflush(NULL);
-    }
-    printf("|\n");
-    
+    printf("| sensor_passagem_entrada: %ld | sensor_passagem_saida: %ld |\n", e->sensor_de_presenca_entrada, e->sensor_de_presenca_saida);
     fflush(NULL);
 
-    log_print("sensored_de_subida 174321597g319 \n", LEVEL_DEBUG);
+    printf("| sensor_de_subida: %d | sensor_de_descida: %d |\n", e->sensor_de_subida_de_andar, e->sensor_de_descida_de_andar);
 
-    printf("| sensores_de_descida: ");
-    
-    fflush(NULL);
-    for (int i = 0; i < ei->e->num_andares - 1; i++)
-    {
-        printf("%d ", ei->e->sensor_de_descida_de_andar[i]);
-        
-        fflush(NULL);
-    }
-    printf("|\n");
-    
-    fflush(NULL);
-
-    log_print("id_andar = \n", LEVEL_DEBUG);
-
-    for (int id_andar = 1; id_andar <= ei->e->num_andares; id_andar++)
+    for (int id_andar = 1; id_andar <= e->num_andares; id_andar++)
     {
         log_print("id_andar = \n", LEVEL_DEBUG);
-
-        EstadoAndar *andar = ei->e->andares[id_andar - 1];
+        int vagas = id_andar == 1 ? e->vagas_andar_1 : e->vagas_andar_2;
+        int num_vagas = 8;
 
         printf("| ----- | id_andar: %d | vagas_ocupadas:", id_andar);
         fflush(NULL);
-        
-        for (int i = 0; i < andar->num_vagas; i++)
+
+        for (int i = 0; i < num_vagas; i++)
         {
-            printf("%d ", andar->vagas[i]);
-            
-            fflush(NULL);
+            printf("%d ", !!(vagas & (1 << i)));
         }
         printf("|\n");
-        
         fflush(NULL);
     }
     log_print("----------- FIM -----------()\n", LEVEL_DEBUG);
 }
 
-EstadoEstacionamento *ler_comando(EstadoInterface *ei)
+EstadoEstacionamento *ler_comando(EstadoEstacionamento *e)
 {
-    
+
     printf("Comandos:\n");
-    fflush(NULL);
-    printf("%p\n", ei);
-    fflush(NULL);
-    printf("%p\n", ei->e);
-    fflush(NULL);
-    printf("%d\n", ei->e->estacionamento_fechado);
-    fflush(NULL);
-    if (ei->e->estacionamento_fechado)
+
+    if (e->estacionamento_fechado)
         printf("\t0 - abrir estacionamento\n");
     else
         printf("\t0 - fechar estacionamento\n");
 
-    for (int id_andar = 1; id_andar <= ei->e->num_andares; id_andar++)
+    for (int id_andar = 1; id_andar <= e->num_andares; id_andar++)
     {
         printf("\t%d - fechar andar %d \n", id_andar, id_andar);
     }
@@ -132,25 +85,33 @@ EstadoEstacionamento *ler_comando(EstadoInterface *ei)
     char c = get_inp_char();
     if (c == '0')
     {
-        ei->e->estacionamento_fechado = -(ei->e->estacionamento_fechado - 1);
+        e->estacionamento_fechado = -(e->estacionamento_fechado - 1);
     }
 
     if (c >= '1' && c <= '9')
     {
-        int i = c - '1';
-        int val = ei->e->andares[i]->andar_lotado;
-        ei->e->andares[i]->andar_lotado = -(val - 1);
+        int i = c - '0';
+        if (i == 1)
+        {
+
+            e->andar_1_fechado = 1 - e->andar_1_fechado;
+        }
+        else if (i == 2)
+        {
+            e->andar_2_fechado = 1 - e->andar_1_fechado;
+        }
+        else
+        {
+            printf("Comando invalido, andar %d desconhecido\n", i);
+        }
     }
 
-    return ei->e;
+    return e;
 }
 
 EstadoEstacionamento *processar_interface(EstadoEstacionamento *e)
 {
-    if (__ei == NULL)
-    {
-        __ei = incializar_estado_interface(e);
-    }
-    desenha_interface(__ei);
-    return ler_comando(__ei);
+    desenha_interface(e);
+    e = ler_comando(e);
+    return e;
 }
