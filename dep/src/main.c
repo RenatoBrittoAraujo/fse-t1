@@ -12,6 +12,9 @@
 #include "shared/inc/comm.h"
 #include "shared/inc/errors.h"
 
+#define DEBUG 1
+#define IF_DEBUG if(DEBUG)
+
 #define PERIODO_MINIMO_ENTRE_EXECUCOES 100 * MILLI
 
 // ========== COMEÇA CONFIG DE PINOS =============
@@ -82,7 +85,7 @@ int id_andar;
 
 void configura_pinos()
 {
-    log_print("[DEP] configura_pinos\n", LEVEL_DEBUG);
+    IF_DEBUG log_print("[DEP] configura_pinos\n", LEVEL_DEBUG);
     bcm2835_gpio_fsel(OUT_A1_ENDERECO_01, BCM2835_GPIO_FSEL_OUTP);
     bcm2835_gpio_fsel(OUT_A1_ENDERECO_02, BCM2835_GPIO_FSEL_OUTP);
     bcm2835_gpio_fsel(OUT_A1_ENDERECO_03, BCM2835_GPIO_FSEL_OUTP);
@@ -105,21 +108,21 @@ void configura_pinos()
 
 void handle_interruption(int sinal)
 {
-    log_print("[DEP] handle_interruption\n", LEVEL_DEBUG);
+    IF_DEBUG log_print("[DEP] handle_interruption\n", LEVEL_DEBUG);
     bcm2835_close();
-    printf("[DEP] interruption! %d\n", sinal);
+    IF_DEBUG printf("[DEP] interruption! %d\n", sinal);
     exit(0);
 }
 
 char *handle_request_servidor_principal(void *c_request, void *IGNORE_estado_dep)
 {
-    log_print("[DEP] handle_request_servidor_principal()", LEVEL_DEBUG);
-    printf("c_request: %p", c_request);fflush(NULL);
+    IF_DEBUG log_print("[DEP] handle_request_servidor_principal()", LEVEL_DEBUG);
+    IF_DEBUG printf("c_request: %p", c_request);fflush(NULL);
 
     Estado *e_novo = parse_string_estado(c_request);
-    printf("e_novo: %p", e_novo);fflush(NULL);
+    IF_DEBUG printf("e_novo: %p", e_novo);fflush(NULL);
 
-    log_print("[DEP] novo estado recebido do servidor principal", LEVEL_DEBUG);
+    IF_DEBUG log_print("[DEP] novo estado recebido do servidor principal", LEVEL_DEBUG);
 
     Estado *e = (Estado *)c_request;
 
@@ -135,18 +138,16 @@ char *handle_request_servidor_principal(void *c_request, void *IGNORE_estado_dep
 
     e->andar_2_fechado = e_novo->andar_2_fechado;
 
-    log_print("[DEP] estado antigo sobrescrito", LEVEL_DEBUG);
+    IF_DEBUG log_print("[DEP] estado antigo sobrescrito", LEVEL_DEBUG);
 
     char *resposta = transforma_estado_em_string(e);
-
-    exit(1);
 
     return resposta;
 }
 
 void escuta_main(ThreadState *ts, void *args)
 {
-    log_print("[DEP] escuta_main\n", LEVEL_DEBUG);
+    IF_DEBUG log_print("[DEP] escuta_main\n", LEVEL_DEBUG);
 
     Estado *e = (Estado *)args;
 
@@ -170,19 +171,19 @@ void escuta_main(ThreadState *ts, void *args)
 
     if (err)
     {
-        printf("[DEP] erro %lu no listen_tcp_ip_port() do dependente\n", err);
+        IF_DEBUG printf("[DEP] erro %lu no listen_tcp_ip_port() do dependente\n", err);
         fflush(NULL);
         pthread_exit(NULL);
     }
 
-    printf("Servidor dependende rodando no endereco %s:%d\n", ip, porta);
+    IF_DEBUG printf("Servidor dependende rodando no endereco %s:%d\n", ip, porta);
 
     pthread_exit(NULL);
 }
 
 ThreadState *cria_thread_listen(Estado *e)
 {
-    log_print("[DEP] ThreadState* t = cria_thread_listen\n", LEVEL_DEBUG);
+    IF_DEBUG log_print("[DEP] ThreadState* t = cria_thread_listen\n", LEVEL_DEBUG);
     ThreadState *t = create_thread_state(-1);
     e->t_main = t;
     t->routine = escuta_main;
@@ -193,7 +194,7 @@ ThreadState *cria_thread_listen(Estado *e)
 
 int atualiza_tempo(time_t *attr, int atualizar)
 {
-    // log_print("[DEP] atualiza_tempo\n", LEVEL_DEBUG);
+    // IF_DEBUG log_print("[DEP] atualiza_tempo\n", LEVEL_DEBUG);
     if (atualizar)
         *attr = get_time_mcs();
     return atualizar;
@@ -201,7 +202,7 @@ int atualiza_tempo(time_t *attr, int atualizar)
 
 Estado *le_aplica_estado(Estado *e, int id_andar)
 {
-    log_print("[DEP] le_aplica_estado iniciando\n", LEVEL_DEBUG);
+    IF_DEBUG log_print("[DEP] le_aplica_estado iniciando\n", LEVEL_DEBUG);
 
     uint8_t end1, end2, end3;
 
@@ -209,14 +210,14 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
     end2 = OUT_A1_ENDERECO_02;
     end3 = OUT_A1_ENDERECO_03;
 
-    log_print("[DEP] le_aplica_estado verificando vagas\n", LEVEL_DEBUG);
+    IF_DEBUG log_print("[DEP] le_aplica_estado verificando vagas\n", LEVEL_DEBUG);
 
     int new_vagas = 0;
 
-    printf("          |-------------------------------|\n");
-    printf("vagas:    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |\n");
-    printf("          |-------------------------------|\n");
-    printf("ocupacao: |");
+    IF_DEBUG printf("          |-------------------------------|\n");
+    IF_DEBUG printf("vagas:    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |\n");
+    IF_DEBUG printf("          |-------------------------------|\n");
+    IF_DEBUG printf("ocupacao: |");
 
     // Itera por todas as vagas
     for (int i = 0; i < 8; i++)
@@ -233,7 +234,7 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         bcm2835_gpio_write(end2, vend2);
         bcm2835_gpio_write(end3, vend3);
 
-        // printf("%d %d %d\n",
+        // IF_DEBUG printf("%d %d %d\n",
         //        bcm2835_gpio_lev(end3),
         //        bcm2835_gpio_lev(end2),
         //        bcm2835_gpio_lev(end1));
@@ -247,13 +248,13 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         {
             new_vagas = new_vagas | (1 << i);
         }
-        printf(" %d |", ocupado);
+        IF_DEBUG printf(" %d |", ocupado);
 
         fflush(NULL);
     }
 
-    printf("\n");
-    printf("          |-------------------------------|\n");
+    IF_DEBUG printf("\n");
+    IF_DEBUG printf("          |-------------------------------|\n");
 
     if (id_andar == 1)
     {
@@ -270,7 +271,7 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
     // entrada
     if (id_andar == 1)
     {
-        log_print("[DEP LE APLICA ESTADO] analisando entrada\n", LEVEL_DEBUG);
+        IF_DEBUG log_print("[DEP LE APLICA ESTADO] analisando entrada\n", LEVEL_DEBUG);
 
         atualiza_tempo(&e->sensor_de_presenca_entrada, bcm2835_gpio_lev(INP_A1_SENSOR_PRESENCA_CANCELA_ENTRADA));
 
@@ -291,7 +292,7 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
     // não é entrada
     if (id_andar == 2)
     {
-        log_print("[DEP LE APLICA ESTADO] analisando passagem de andar\n", LEVEL_DEBUG);
+        IF_DEBUG log_print("[DEP LE APLICA ESTADO] analisando passagem de andar\n", LEVEL_DEBUG);
 
         if (bcm2835_gpio_lev(INP_SENSOR_DE_PASSAGEM_1))
         {
@@ -317,31 +318,31 @@ int main()
     set_level(LEVEL_DEBUG);
     set_time_wait_ignore(0);
 
-    log_print("[DEP MAIN] incializando\n", LEVEL_INFO);
+    IF_DEBUG log_print("[DEP MAIN] incializando\n", LEVEL_INFO);
 
     if (!bcm2835_init())
         exit(1);
-    log_print("[DEP MAIN] bcm iniciado\n", LEVEL_INFO);
+    IF_DEBUG log_print("[DEP MAIN] bcm iniciado\n", LEVEL_INFO);
 
     configura_pinos();
-    log_print("[DEP MAIN] pinos configurados\n", LEVEL_INFO);
+    IF_DEBUG log_print("[DEP MAIN] pinos configurados\n", LEVEL_INFO);
 
     signal(SIGINT, handle_interruption);
-    log_print("[DEP MAIN] signal settado\n", LEVEL_INFO);
+    IF_DEBUG log_print("[DEP MAIN] signal settado\n", LEVEL_INFO);
 
     id_andar = read_env_int_index("ID_ANDAR", -1);
     int ator_atual = id_andar == 2 ? ATOR_DEP2 : ATOR_DEP1;
 
     char BUFF[1000];
-    sprintf(BUFF, "%s%d", "ANDAR_", id_andar);
-    log_print(BUFF, 1);
+    IF_DEBUG sprintf(BUFF, "%s%d", "ANDAR_", id_andar);
+    IF_DEBUG log_print(BUFF, 1);
 
-    log_print("[DEP MAIN] estado inicializado\n", LEVEL_INFO);
+    IF_DEBUG log_print("[DEP MAIN] estado inicializado\n", LEVEL_INFO);
     Estado *e = inicializar_estado(BUFF, ator_atual);
 
-    log_print("[DEP MAIN] abrindo porta\n", LEVEL_DEBUG);
+    IF_DEBUG log_print("[DEP MAIN] abrindo porta\n", LEVEL_DEBUG);
     ThreadState *t = cria_thread_listen(e);
-    log_print("[DEP MAIN] servidor dependente rodando\n", LEVEL_DEBUG);
+    IF_DEBUG log_print("[DEP MAIN] servidor dependente rodando\n", LEVEL_DEBUG);
 
     time_t last_exec = 0;
     char *ip;
@@ -359,16 +360,16 @@ int main()
 
     while (1)
     {
-        printf("rodando em %s:%d\n", ip, porta);
+        IF_DEBUG printf("rodando em %s:%d\n", ip, porta);
         e = le_aplica_estado(e, id_andar);
 
         if (is_newer(PERIODO_MINIMO_ENTRE_EXECUCOES + last_exec))
         {
             time_t wait_time = PERIODO_MINIMO_ENTRE_EXECUCOES + last_exec - get_time_mcs();
-            printf("Waiting %lu ms\n", wait_time);
+            IF_DEBUG printf("Waiting %lu ms\n", wait_time);
             wait_micro(wait_time);
         }
         last_exec = get_time_mcs();
-        // printf("\e[1;1H\e[2J");
+        // IF_DEBUG printf("\e[1;1H\e[2J");
     }
 }
