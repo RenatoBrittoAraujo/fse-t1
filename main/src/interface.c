@@ -5,14 +5,29 @@
 #include <fcntl.h>
 
 #include "shared/inc/shared_util.h"
+#include "shared/inc/time.h"
 #include "shared/inc/proto.h"
 
 #include "main/inc/interface.h"
 
 #define NONE '\0'
 #define TOGGLE_ESTACIONAMENTO '0';
+#define DRAW_FREQUENCY 100 
 
 int initialized = 0;
+time_t last_draw = 0;
+
+int should_draw()
+{
+    int now = get_time_mcs();
+    printf("       timestamp: %ld      \n", now);
+    printf("       draw_freq: %ld      \n", DRAW_FREQUENCY);
+    printf("       last_draw: %ld      \n", last_draw);
+    printf("       last_draw + DRAW_FREQUENCY: %ld      \n", last_draw + DRAW_FREQUENCY);
+    printf("       last_draw + DRAW_FREQUENCY - now: %ld      \n", last_draw + DRAW_FREQUENCY - now);
+    fflush(NULL);
+    return last_draw + DRAW_FREQUENCY <= now ;
+}
 
 void init()
 {
@@ -36,35 +51,40 @@ char get_inp_char()
 
 void desenha_interface(Estado *e)
 {
+    if (!should_draw()) {}
     // ====== DISPLAY
-    printf("=== GERENCIADOR DE ESTACIONAMENTO ===");
+    printf("|------------ GERENCIADOR DE ESTACIONAMENTO ------------|\n");
 
-    printf("| andares: %d |\n", e->num_andares);
+    printf("|                numero de andares: %d                   |\n", e->num_andares);
 
-    printf("| sensor_deteccao_entrada: %ld | sensor_deteccao_saida: %ld |\n", e->sensor_de_presenca_entrada, e->sensor_de_presenca_saida);
+    printf("| sensor_deteccao_entrada: %ld   sensor_deteccao_saida: %ld |\n", e->sensor_de_presenca_entrada, e->sensor_de_presenca_saida);
 
-    printf("| sensor_passagem_entrada: %ld | sensor_passagem_saida: %ld |\n", e->sensor_de_presenca_entrada, e->sensor_de_presenca_saida);
+    printf("| sensor_passagem_entrada: %ld   sensor_passagem_saida: %ld |\n", e->sensor_de_presenca_entrada, e->sensor_de_presenca_saida);
     fflush(NULL);
 
-    printf("| sensor_de_subida: %d | sensor_de_descida: %d |\n", e->sensor_de_subida_de_andar, e->sensor_de_descida_de_andar);
+    printf("| sensor_de_subida: %d              sensor_de_descida: %d |\n", e->sensor_de_subida_de_andar, e->sensor_de_descida_de_andar);
 
     for (int id_andar = 1; id_andar <= e->num_andares; id_andar++)
     {
-        log_print("id_andar = \n", LEVEL_DEBUG);
+        printf("|---------------------- andar %d ------------------------|\n", id_andar);
         int vagas = id_andar == 1 ? e->vagas_andar_1 : e->vagas_andar_2;
         int num_vagas = 8;
 
-        printf("| ----- | id_andar: %d | vagas_ocupadas:", id_andar);
+        printf("|          vagas_ocupadas: ", id_andar);
         fflush(NULL);
 
         for (int i = 0; i < num_vagas; i++)
         {
             printf("%d ", !!(vagas & (1 << i)));
         }
-        printf("|\n");
+        printf("             |\n");
+        int fechado = id_andar == 1 ? e->andar_1_fechado : e->andar_2_fechado;
+        int lotado = id_andar == 1 ? e->andar_1_lotado : e->andar_2_lotado;
+        printf("|          lotado: %d              fechado: %d            |\n", fechado, lotado);
         fflush(NULL);
     }
-    log_print("----------- FIM -----------()\n", LEVEL_DEBUG);
+    printf("|-------------------------------------------------------|\n\n");
+    last_draw = get_time_mcs();
 }
 
 Estado *ler_comando(Estado *e)
@@ -83,6 +103,13 @@ Estado *ler_comando(Estado *e)
     }
 
     char c = get_inp_char();
+    if (c == NONE)
+    {
+        printf("nao li nada!\n");
+        return;
+    }
+    printf("EU LI O COMANDO: %d %c\n", c, c);
+
     if (c == '0')
     {
         e->estacionamento_fechado = -(e->estacionamento_fechado - 1);
@@ -111,6 +138,7 @@ Estado *ler_comando(Estado *e)
 
 Estado *processar_interface(Estado *e)
 {
+    init();
     desenha_interface(e);
     e = ler_comando(e);
     return e;

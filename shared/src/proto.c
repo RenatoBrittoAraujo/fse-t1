@@ -49,7 +49,6 @@ Estado *inicializar_estado(char *env_name, int ator_atual)
 
 Estado *copiar_estado(Estado *e)
 {
-    log_print("[PROTO.C] copiar_estado\n", LEVEL_DEBUG);
     Estado *ne = (Estado *)malloc(sizeof(Estado));
     memcpy(ne, e, sizeof(Estado));
     return ne;

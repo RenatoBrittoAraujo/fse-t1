@@ -19,6 +19,9 @@
 #define ATOR_DEP1 2
 #define ATOR_DEP2 3
 
+#define DEBUG 1
+#define IF_DEBUG if(DEBUG)
+
 // ======= CONTROLE
 
 struct Estado
