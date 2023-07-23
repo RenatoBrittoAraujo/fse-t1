@@ -13,6 +13,9 @@
 #include <string.h>
 #include <errno.h>
 #include <ncurses.h>
+#include <pthread.h>
+#include <signal.h>
+#include <unistd.h>
 #define MAXBYTES 80
 
 #include "shared/inc/shared_util.h"
@@ -77,8 +80,17 @@ void get_inp_char(ThreadState *ts, void *args)
     // cbreak();    // Disable line buffering (pass characters immediately to the program)
     // noecho();    // Don't echo user input to the screen
 
+
+    // Set NCURSES_NO_UTF8_ACS environment variable to ignore ncurses
+
+    FILE* dontcare = freopen("/dev/null", "w", stdout);
+    newterm(NULL, stdout, dontcare);
+
+    pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
+    pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
+
     // Initialize ncurses again for another session
-    initscr();
+    // initscr();
     // newterm();
     // stdscr = newterm(NULL, stdout, stdin);
     cbreak(); // Disable line buffering
@@ -93,6 +105,8 @@ void get_inp_char(ThreadState *ts, void *args)
 
     // End ncurses for the second session
     endwin();
+
+
     pthread_exit((void *)c);
 
     // return c;
@@ -163,12 +177,27 @@ Estado *ler_comando(Estado *e)
     ThreadState *t = create_thread_state(-1);
     t->routine = get_inp_char;
     start_thread(t);
-    void *res = wait_thread_response_with_deadline(t, 1000);
-    char c = ((char *)res)[0];
-    if (c == NONE)
+    wait_micro(100*MILLI);
+    printf("THREAD END\n");fflush(NULL);
+    void* cp;
+    // Request the cancellation of the thread
+    printf("pthread_cancel\n");fflush(NULL);
+    pthread_cancel(t->thread_id);
+    printf("pthread_join\n");fflush(NULL);
+    pthread_join(t->thread_id, &cp);
+
+    freopen("/dev/tty", "w", stdout);
+    
+    printf("JOINED!\n");fflush(NULL);
+    if (cp == NULL)
     {
-        return;
+        refresh(); // Refresh the screen
+        endwin();
+            // Close the file and restore stdout
+        return e;
     }
+    char c = (char)cp;
+    printf("c: %p\n", c);
 
     int encontrado = 0;
 
