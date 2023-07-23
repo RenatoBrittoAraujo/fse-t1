@@ -9,6 +9,8 @@
 #include "shared/inc/shared_util.h"
 #include "shared/inc/tcp_ip.h"
 #include "shared/inc/proto.h"
+#include "shared/inc/comm.h"
+#include "shared/inc/errors.h"
 
 #define PERIODO_MINIMO_ENTRE_EXECUCOES 100 * MILLI
 
@@ -21,12 +23,12 @@
 #define OUT_A1_ENDERECO_03 19
 #define INP_A1_SENSOR_VAGA 18
 #define OUT_A1_SINAL_DE_LOTADO_FECHADO 27
-#define INP_A1_SENSOR_ABERTURA_CANCELA_ENTRADA 23
-#define INP_A1_SENSOR_FECHAMENTO_CANCELA_ENTRADA 24
-#define INP_A1_SENSOR_ABERTURA_CANCELA_SAIDA 25
-#define INP_A1_SENSOR_FECHAMENTO_CANCELA_SAIDA 25
+#define INP_A1_SENSOR_PRESENCA_CANCELA_ENTRADA 23
+#define INP_A1_SENSOR_PASSAGEM_CANCELA_ENTRADA 24
+#define INP_A1_SENSOR_PRESENCA_CANCELA_SAIDA 25
+#define INP_A1_SENSOR_PASSAGEM_CANCELA_SAIDA 25
 #define OUT_A1_MOTOR_CANCELA_ENTRADA 10
-#define INP_A1_SENSOR_FECHAMENTO_GPIO 12
+#define INP_A1_SENSOR_PASSAGEM_GPIO 12
 #define OUT_A1_MOTOR_CANCELA_SAIDA 17
 
 #define OUT_A2_ENDERECO_01 13
@@ -34,8 +36,8 @@
 #define OUT_A2_ENDERECO_03 5
 #define INP_A2_SENSOR_VAGA 20
 #define OUT_A2_SINAL_DE_LOTADO_FECHADO 8
-#define INP_A2_SENSOR_ABERTURA_CANCELA 16
-#define INP_A2_SENSOR_FECHAMENTO_CANCELA 21
+#define INP_A2_SENSOR_PRESENCA_CANCELA 16
+#define INP_A2_SENSOR_PASSAGEM_CANCELA 21
 
 #define INP_SENSOR_DE_PASSAGEM_1 16
 #define INP_SENSOR_DE_PASSAGEM_2 21
@@ -49,11 +51,11 @@
 #define OUT_A1_ENDERECO_03 19
 #define INP_A1_SENSOR_VAGA 18
 #define OUT_A1_SINAL_DE_LOTADO_FECHADO 27
-#define INP_A1_SENSOR_ABERTURA_CANCELA_ENTRADA 23
-#define INP_A1_SENSOR_FECHAMENTO_CANCELA_ENTRADA 24
+#define INP_A1_SENSOR_PRESENCA_CANCELA_ENTRADA 23
+#define INP_A1_SENSOR_PASSAGEM_CANCELA_ENTRADA 24
 #define OUT_A1_MOTOR_CANCELA_ENTRADA 10
-#define INP_A1_SENSOR_ABERTURA_CANCELA_SAIDA 25
-#define INP_A1_SENSOR_FECHAMENTO_CANCELA_SAIDA 12
+#define INP_A1_SENSOR_PRESENCA_CANCELA_SAIDA 25
+#define INP_A1_SENSOR_PASSAGEM_CANCELA_SAIDA 12
 #define OUT_A1_MOTOR_CANCELA_SAIDA 17
 
 #define OUT_A2_ENDERECO_01 13
@@ -61,8 +63,8 @@
 #define OUT_A2_ENDERECO_03 5
 #define INP_A2_SENSOR_VAGA 20
 #define OUT_A2_SINAL_DE_LOTADO_FECHADO 8
-#define INP_A2_SENSOR_ABERTURA_CANCELA 16
-#define INP_A2_SENSOR_FECHAMENTO_CANCELA 21
+#define INP_A2_SENSOR_PRESENCA_CANCELA 16
+#define INP_A2_SENSOR_PASSAGEM_CANCELA 21
 
 #define INP_SENSOR_DE_PASSAGEM_1 16
 #define INP_SENSOR_DE_PASSAGEM_2 21
@@ -86,19 +88,19 @@ void configura_pinos()
     bcm2835_gpio_fsel(OUT_A1_ENDERECO_03, BCM2835_GPIO_FSEL_OUTP);
     bcm2835_gpio_fsel(INP_A1_SENSOR_VAGA, BCM2835_GPIO_FSEL_INPT);
     bcm2835_gpio_fsel(OUT_A1_SINAL_DE_LOTADO_FECHADO, BCM2835_GPIO_FSEL_OUTP);
-    bcm2835_gpio_fsel(INP_A1_SENSOR_ABERTURA_CANCELA_ENTRADA, BCM2835_GPIO_FSEL_INPT);
-    bcm2835_gpio_fsel(INP_A1_SENSOR_FECHAMENTO_CANCELA_ENTRADA, BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(INP_A1_SENSOR_PRESENCA_CANCELA_ENTRADA, BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(INP_A1_SENSOR_PASSAGEM_CANCELA_ENTRADA, BCM2835_GPIO_FSEL_INPT);
     bcm2835_gpio_fsel(OUT_A1_MOTOR_CANCELA_ENTRADA, BCM2835_GPIO_FSEL_OUTP);
-    bcm2835_gpio_fsel(INP_A1_SENSOR_ABERTURA_CANCELA_SAIDA, BCM2835_GPIO_FSEL_INPT);
-    bcm2835_gpio_fsel(INP_A1_SENSOR_FECHAMENTO_CANCELA_SAIDA, BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(INP_A1_SENSOR_PRESENCA_CANCELA_SAIDA, BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(INP_A1_SENSOR_PASSAGEM_CANCELA_SAIDA, BCM2835_GPIO_FSEL_INPT);
     bcm2835_gpio_fsel(OUT_A1_MOTOR_CANCELA_SAIDA, BCM2835_GPIO_FSEL_OUTP);
     bcm2835_gpio_fsel(OUT_A2_ENDERECO_01, BCM2835_GPIO_FSEL_OUTP);
     bcm2835_gpio_fsel(OUT_A2_ENDERECO_02, BCM2835_GPIO_FSEL_OUTP);
     bcm2835_gpio_fsel(OUT_A2_ENDERECO_03, BCM2835_GPIO_FSEL_OUTP);
     bcm2835_gpio_fsel(INP_A2_SENSOR_VAGA, BCM2835_GPIO_FSEL_INPT);
     bcm2835_gpio_fsel(OUT_A2_SINAL_DE_LOTADO_FECHADO, BCM2835_GPIO_FSEL_OUTP);
-    bcm2835_gpio_fsel(INP_A2_SENSOR_ABERTURA_CANCELA, BCM2835_GPIO_FSEL_INPT);
-    bcm2835_gpio_fsel(INP_A2_SENSOR_FECHAMENTO_CANCELA, BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(INP_A2_SENSOR_PRESENCA_CANCELA, BCM2835_GPIO_FSEL_INPT);
+    bcm2835_gpio_fsel(INP_A2_SENSOR_PASSAGEM_CANCELA, BCM2835_GPIO_FSEL_INPT);
 }
 
 void handle_interruption(int sinal)
@@ -113,18 +115,27 @@ char *handle_request_servidor_principal(void *c_request, void *estado_dep)
 {
     log_print("[DEP] handle_request_servidor_principal()", LEVEL_DEBUG);
 
-    EstadoEstacionamento *e = parse_string_resposta(c_request);
+    EstadoEstacionamento *e_novo = parse_string_resposta(c_request);
 
     log_print("[DEP] novo estado recebido do servidor principal", LEVEL_DEBUG);
 
-    // estado do andar é enviado
-    char *resposta = tranformar_request_em_string(estado_dep);
+    EstadoEstacionamento *e = (EstadoEstacionamento *)estado_dep;
 
-    // novo estado sobrescreve antigo estado
-    memcpy(estado_dep, e, sizeof(EstadoEstacionamento));
-    memcpy(estado_dep->andares[0], e->andares[0], sizeof(EstadoEstacionamento));
-    memcpy(estado_dep->andares[1], e->andares[1], sizeof(EstadoEstacionamento));
-    memcpy(estado_dep->entrada, e->entradas, sizeof(EstadoEstacionamento));
+    e->num_vagas_andar_1 = e_novo->num_vagas_andar_1;
+
+    e->andar_1_fechado = e_novo->andar_1_fechado;
+
+    e->motor_cancela_entrada_ligado = e_novo->motor_cancela_entrada_ligado;
+
+    e->motor_cancela_saida_ligado = e_novo->motor_cancela_saida_ligado;
+
+    e->num_vagas_andar_2 = e_novo->num_vagas_andar_2;
+
+    e->andar_2_fechado = e_novo->andar_2_fechado;
+
+    log_print("[DEP] estado antigo sobrescrito", LEVEL_DEBUG);
+
+    char *resposta = tranformar_request_em_string(e);
 
     return resposta;
 }
@@ -137,10 +148,21 @@ void escuta_main(ThreadState *ts, void *args)
 
     int ator_atual = e->ator_atual;
 
-    int porta = req->endereco->porta;
-    char *ip = req->endereco->ip;
+    int porta;
+    char *ip;
 
-    error_t err = listen_tcp_ip_port(ip, porta, handle_request_servidor_principal, NULL, args);
+    if (ator_atual == ATOR_DEP1)
+    {
+        porta = e->porta_andar_1;
+        ip = e->ip_andar_1;
+    }
+    else
+    {
+        porta = e->porta_andar_2;
+        ip = e->ip_andar_2;
+    }
+
+    t_error err = listen_tcp_ip_port(ip, porta, handle_request_servidor_principal, NULL, args);
 
     if (err)
     {
@@ -149,12 +171,12 @@ void escuta_main(ThreadState *ts, void *args)
         pthread_exit(NULL);
     }
 
-    printf("Servidor dependende rodando no endereco %s:%d\n", req->endereco->ip, req->endereco->porta);
+    printf("Servidor dependende rodando no endereco %s:%d\n", ip, porta);
 
-    pthread_exit(res);
+    pthread_exit(NULL);
 }
 
-ThreadState *ThreadState *t = cria_thread_listen(EstadoEstacionamento * e)
+ThreadState *cria_thread_listen(EstadoEstacionamento *e)
 {
     log_print("[DEP] ThreadState* t = cria_thread_listen\n", LEVEL_DEBUG);
     ThreadState *t = create_thread_state(-1);
@@ -169,52 +191,26 @@ int atualiza_tempo(time_t *attr, int atualizar)
 {
     log_print("[DEP] atualiza_tempo\n", LEVEL_DEBUG);
     if (atualizar)
-        *attr = get_timestamp_now();
+        *attr = get_time_mcs();
     return atualizar;
 }
 
 EstadoEstacionamento *le_aplica_estado(EstadoEstacionamento *e, int id_andar)
 {
-    log_print("[DEP] le_aplica_estado\n", LEVEL_DEBUG);
-    if (request != NULL)
-    {
-        log_print("[DEP] tem request1!!\n", LEVEL_DEBUG);
-        memcpy(e, request, sizeof(EstadoEstacionamento));
-        log_print("[DEP] tem request2!!\n", LEVEL_DEBUG);
-        free(request);
-        log_print("[DEP] tem request3!!\n", LEVEL_DEBUG);
-        request = NULL;
-        log_print("[DEP] tem request4!!\n", LEVEL_DEBUG);
-    }
     log_print("[DEP] le_aplica_estado iniciando\n", LEVEL_DEBUG);
-    printf("e->num_andares = %d\n", e->num_andares);
 
-    if (e->num_andares < id_andar - 1)
-    {
-        log_print("[ERROR] [DEP] le_aplica_estado numero da andar < id do andar atual\n", LEVEL_ERROR);
-    }
-
-    EstadoAndar *a = e->andares[id_andar - 1];
-    int andar_entrada = read_env_int_index("ID_ANDAR_DA_ENTRADA", -1);
-
-    log_print("[DEP] le_aplica_estado iniciando\n", LEVEL_DEBUG);
     uint8_t end1, end2, end3;
-    if (id_andar == 1 || 1)
-    {
-        end1 = OUT_A1_ENDERECO_01;
-        end2 = OUT_A1_ENDERECO_02;
-        end3 = OUT_A1_ENDERECO_03;
-    }
-    else
-    {
-        end1 = OUT_A2_ENDERECO_03;
-        end2 = OUT_A2_ENDERECO_02;
-        end3 = OUT_A2_ENDERECO_01;
-    }
+
+    end1 = OUT_A1_ENDERECO_01;
+    end2 = OUT_A1_ENDERECO_02;
+    end3 = OUT_A1_ENDERECO_03;
 
     log_print("[DEP] le_aplica_estado verificando vagas\n", LEVEL_DEBUG);
+
+    int new_vagas = 0;
+
     // Itera por todas as vagas
-    for (int i = 0; i < a->num_vagas; i++)
+    for (int i = 0; i < 8; i++)
     {
         int vend1 = LOW, vend2 = LOW, vend3 = LOW;
         if ((1 << 0) & i)
@@ -232,50 +228,71 @@ EstadoEstacionamento *le_aplica_estado(EstadoEstacionamento *e, int id_andar)
                bcm2835_gpio_lev(end3),
                bcm2835_gpio_lev(end2),
                bcm2835_gpio_lev(end1));
-        fflush(NULL);
 
-        // claramente essa solução não suporta mais que 8 vagas, mas foi oq deu
+        fflush(NULL);
         wait_micro(5);
+
         int read = bcm2835_gpio_lev(INP_A1_SENSOR_VAGA);
-        a->vagas[i] = read;
-        printf("vaga %d é %d!\n", i + 1, read);
+
+        if (read != LOW)
+        {
+            new_vagas = new_vagas | (1 << i);
+            printf("vaga %d está ocupada!\n", i + 1);
+        }
+        else
+        {
+            printf("vaga %d está livre!\n", i + 1);
+        }
+
         fflush(NULL);
     }
 
-    if (id_andar == andar_entrada)
+    if (id_andar == 1)
+    {
+        e->vagas_andar_1 = new_vagas;
+        e->andar_1_lotado = 0x00FF == new_vagas;
+    }
+
+    if (id_andar == 2)
+    {
+        e->vagas_andar_2 = new_vagas;
+        e->andar_2_lotado = 0x00FF == new_vagas;
+    }
+
+    // entrada
+    if (id_andar == 1)
     {
         log_print("[DEP LE APLICA ESTADO] analisando entrada\n", LEVEL_DEBUG);
 
-        atualiza_tempo(&e->entrada->sensor_de_presenca_entrada, bcm2835_gpio_lev(INP_A1_SENSOR_ABERTURA_CANCELA_ENTRADA));
-        atualiza_tempo(&e->entrada->sensor_de_passagem_saida, bcm2835_gpio_lev(INP_A1_SENSOR_FECHAMENTO_CANCELA_SAIDA));
-        bcm2835_gpio_write(OUT_A1_MOTOR_CANCELA_ENTRADA, e->entrada->motor_entrada_ligado);
+        atualiza_tempo(&e->sensor_de_presenca_entrada, bcm2835_gpio_lev(INP_A1_SENSOR_PRESENCA_CANCELA_ENTRADA));
 
-        atualiza_tempo(&e->entrada->sensor_de_passagem_entrada, bcm2835_gpio_lev(INP_A1_SENSOR_FECHAMENTO_CANCELA_ENTRADA));
-        atualiza_tempo(&e->entrada->sensor_de_presenca_saida, bcm2835_gpio_lev(INP_A1_SENSOR_ABERTURA_CANCELA_SAIDA));
-        bcm2835_gpio_write(OUT_A1_MOTOR_CANCELA_SAIDA, e->entrada->motor_saida_ligado);
+        atualiza_tempo(&e->sensor_de_passagem_saida, bcm2835_gpio_lev(INP_A1_SENSOR_PASSAGEM_CANCELA_SAIDA));
+
+        bcm2835_gpio_write(OUT_A1_MOTOR_CANCELA_ENTRADA, e->motor_cancela_entrada_ligado);
+
+        atualiza_tempo(&e->sensor_de_passagem_entrada, bcm2835_gpio_lev(INP_A1_SENSOR_PASSAGEM_CANCELA_ENTRADA));
+
+        atualiza_tempo(&e->sensor_de_presenca_saida,
+                       bcm2835_gpio_lev(INP_A1_SENSOR_PRESENCA_CANCELA_SAIDA));
+
+        bcm2835_gpio_write(OUT_A1_MOTOR_CANCELA_SAIDA, e->motor_cancela_saida_ligado);
 
         bcm2835_gpio_write(OUT_A1_SINAL_DE_LOTADO_FECHADO, e->estacionamento_fechado || e->estacionamento_lotado);
     }
-    else
+
+    // não é entrada
+    if (id_andar == 2)
     {
         log_print("[DEP LE APLICA ESTADO] analisando passagem de andar\n", LEVEL_DEBUG);
-        int id_sensores = id_andar;
-        if (andar_entrada < id_andar)
-        {
-            id_sensores--;
-        }
 
-        log_print("le sensor de entrada \n", LEVEL_DEBUG);
         if (bcm2835_gpio_lev(INP_SENSOR_DE_PASSAGEM_1))
         {
-            e->sensor_de_subida_de_andar[id_sensores - 1]++;
-            e->tempo_sensores_de_andar_atualizados = get_timestamp_now();
+            e->sensor_de_subida_de_andar = get_time_mcs();
         }
 
         if (bcm2835_gpio_lev(INP_SENSOR_DE_PASSAGEM_2))
         {
-            e->sensor_de_descida_de_andar[id_sensores - 1]++;
-            e->tempo_sensores_de_andar_atualizados = get_timestamp_now();
+            e->sensor_de_descida_de_andar = get_time_mcs();
         }
 
         bcm2835_gpio_write(OUT_A2_SINAL_DE_LOTADO_FECHADO, e->estacionamento_fechado || e->estacionamento_lotado);
@@ -327,10 +344,10 @@ int main()
 
         if (is_newer(PERIODO_MINIMO_ENTRE_EXECUCOES + last_exec))
         {
-            time_t wait_time = PERIODO_MINIMO_ENTRE_EXECUCOES + last_exec - get_timestamp_now();
+            time_t wait_time = PERIODO_MINIMO_ENTRE_EXECUCOES + last_exec - get_time_mcs();
             printf("Waiting %lu ms\n", wait_time);
             wait_micro(wait_time);
         }
-        last_exec = get_timestamp_now();
+        last_exec = get_time_mcs();
     }
 }

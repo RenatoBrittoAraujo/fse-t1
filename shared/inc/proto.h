@@ -51,13 +51,13 @@ struct EstadoEstacionamento
 
     // entradas para andar 2
     int num_vagas_andar_2;
-    int vagas_andar_2;
     int andar_2_fechado;
-    time_t sensor_de_subida_de_andar;
-    time_t sensor_de_descida_de_andar;
 
     // entradas do andar 2
     int andar_2_lotado;
+    int vagas_andar_2;
+    time_t sensor_de_subida_de_andar;
+    time_t sensor_de_descida_de_andar;
 
     // comum
     int porta_andar_1;
