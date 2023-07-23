@@ -2,7 +2,7 @@ make -C main run
 make[1]: Entering directory '/home/renatoaraujo/t1/main'
 make[2]: Entering directory '/home/renatoaraujo/t1/main'
 ENV=PROD IP_ANDAR_1=127.0.0.1 PORTA_ANDAR_1=6968 IP_ANDAR_2=127.0.0.1 PORTA_ANDAR_2=6969 ./main_prod
-                     TIMETAMP = 2140100306                  
+                     TIMETAMP = 902723180                  
 |------------ GERENCIADOR DE ESTACIONAMENTO ------------|
 |                numero de andares: 2                   |
 | sensor_deteccao_entrada: 0   sensor_deteccao_saida: 0 |
@@ -16,7 +16,7 @@ ENV=PROD IP_ANDAR_1=127.0.0.1 PORTA_ANDAR_1=6968 IP_ANDAR_2=127.0.0.1 PORTA_ANDA
 |          lotado: 0              fechado: 0            |
 |-------------------------------------------------------|
 
-                     TIMETAMP = 2140121152                  
+                     TIMETAMP = 902744035                  
 |------------ GERENCIADOR DE ESTACIONAMENTO ------------|
 |                numero de andares: 2                   |
 | sensor_deteccao_entrada: 0   sensor_deteccao_saida: 0 |

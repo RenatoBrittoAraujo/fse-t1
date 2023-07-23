@@ -29,6 +29,8 @@
 #define TOGGLE_ESTACIONAMENTO '0';
 #define DRAW_FREQUENCY 100
 
+int readv;
+
 void get_inp_char(ThreadState *ts, void *args)
 {
     // fd_set readfds;
@@ -83,24 +85,35 @@ void get_inp_char(ThreadState *ts, void *args)
 
     // Set NCURSES_NO_UTF8_ACS environment variable to ignore ncurses
 
-    FILE* dontcare = freopen("/dev/null", "w", stdout);
-    newterm(NULL, dontcare, stdin);
+    // FILE* dontcare = freopen("/dev/null", "w", stdout);
+    // newterm(NULL, stdin, stdin);
+
+        // Redirect stdout back to the terminal
+    freopen("/dev/null", "w", stdout);
+
+    //     // Redirect stdout back to the terminal
+    // freopen("/dev/null", "r", stdin);
 
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
     // Initialize ncurses again for another session
-    // initscr();
+    initscr();
+    freopen("/dev/null", "w", stdout);
     // newterm();
     // stdscr = newterm(NULL, stdout, stdin);
     cbreak(); // Disable line buffering
+    freopen("/dev/null", "w", stdout);
     noecho(); // Disable echoing of user input
+    freopen("/dev/null", "w", stdout);
 
     // Your big program logic for the second session...
 
     // Get user input again
 
     int c = getch();
+    readv = c;
+
     refresh(); // Refresh the screen
 
     // End ncurses for the second session
@@ -176,27 +189,28 @@ Estado *ler_comando(Estado *e)
 
     ThreadState *t = create_thread_state(-1);
     t->routine = get_inp_char;
+    readv = '0';
     start_thread(t);
     wait_micro(100*MILLI);
     printf("THREAD END\n");fflush(NULL);
-    void* cp;
+    char c;
     // Request the cancellation of the thread
     printf("pthread_cancel\n");fflush(NULL);
     pthread_cancel(t->thread_id);
     printf("pthread_join\n");fflush(NULL);
-    pthread_join(t->thread_id, &cp);
+    pthread_join(t->thread_id, NULL);
 
     freopen("/dev/tty", "w", stdout);
     
-    printf("JOINED!\n");fflush(NULL);
-    if (cp == NULL)
+    printf("JOINED! with c = %d\n", readv);fflush(NULL);
+    c = readv;
+    if (readv == '0')
     {
-        refresh(); // Refresh the screen
-        endwin();
-            // Close the file and restore stdout
+        // refresh(); // Refresh the screen
+        // endwin();
+        //     // Close the file and restore stdout
         return e;
     }
-    char c = (char)cp;
     printf("c: %p\n", c);
 
     int encontrado = 0;
@@ -232,7 +246,7 @@ Estado *ler_comando(Estado *e)
 
     if (!encontrado)
     {
-        printf("-----  Comando invalido '%c'\n", c);
+        printf("-----  Comando invalido '%c' %d\n", c, c);
     }
 
     return e;
