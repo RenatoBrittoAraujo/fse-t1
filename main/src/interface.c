@@ -84,7 +84,7 @@ void get_inp_char(ThreadState *ts, void *args)
     // Set NCURSES_NO_UTF8_ACS environment variable to ignore ncurses
 
     FILE* dontcare = freopen("/dev/null", "w", stdout);
-    newterm(NULL, stdout, dontcare);
+    newterm(NULL, dontcare, stdin);
 
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
