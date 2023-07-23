@@ -1,7 +1,7 @@
 prod:
-	@make -f Makefile_prod
+	make -f Makefile_prod
 
-run_prod:
+run:
 	@make -f Makefile_prod run
 
 clean:

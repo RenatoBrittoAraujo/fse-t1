@@ -1,4 +1,4 @@
-=gcc
+CC=gcc
 TARGET=main_prod
 SRCEXT=c
 LIB=-l pthread
@@ -31,7 +31,7 @@ pid_run:
 	sh -c 'echo $$; exec $(EXEC)'
 
 run: 
-	$(shell sed '' ../.env) ./$(TARGET)
+	ID_ANDAR=$(ID_ANDAR) RASP_DO_ESTACIONAMENTO_EH_1_2_OU_3=$(RASP_DO_ESTACIONAMENTO_EH_1_2_OU_3) $(shell sed '' ../.env) ./$(TARGET)
 
 log:
 	echo "objects =        $(OBJECTS)"

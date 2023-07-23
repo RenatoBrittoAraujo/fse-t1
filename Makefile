@@ -6,19 +6,20 @@ PRJ_NAME = t1_v3
 SERVER_PROJECT_PATH = /home/$(USER)/$(PRJ_NAME)
 PATH_MY_OS = /home/renato/Desktop/fse/$(PRJ_NAME)
 
-all:
+compile:
 	make clean
 	make -C shared
-	make -C dep
-	make -C main
-	make -C main run_prod
+	make -C dep prod
+	make -C main prod
 
-all_dep:
-	make clean
-	make -C shared
-	make -C dep
-	make -C main
-	make -C main run_prod
+principal:
+	make -C main run
+
+andar_1:
+	ID_ANDAR=1 make -C dep run
+
+andar_2:
+	ID_ANDAR=2 make -C dep run
 
 #  CONFIGURACOES DE DEPLOY
 deps_dev:

@@ -7,10 +7,10 @@ set_env:
 prod:
 	make -f Makefile_prod
 
-run_prod: set_env
+run: set_env
 	ID_ANDAR=$(ID_ANDAR) make -f Makefile_prod run
 
-all_prod:
+compile:
 	make prod
 	ID_ANDAR=$(ID_ANDAR) make run_prod
 

@@ -93,7 +93,7 @@ void bcm2835_gpio_write(uint8_t pin, uint8_t on) { log_print("[BCM MOCK] bcm2835
 
 #include <bcm2835.h>
 
-#include "shared/inc/time_util.h"
+#include "shared/inc/time.h"
 
 #endif
 // ========== TERMINA CONFIG DE AMBIENTE =============
