@@ -59,13 +59,14 @@ void escuta_dependente(ThreadState *ts, void *args)
         pthread_exit(NULL);
     }
 
-    char *req = tranformar_request_em_string(estado_main);
+    char *req = transforma_estado_em_string(estado_main);
     char *res_buff;
 
     printf("chamando dependente no endereço: %s:%d\n", ip, porta);
     fflush(NULL);
 
     t_error err = call_tcp_ip_port(req, ip, porta, res_buff);
+    free(req);
 
     if (err != NO_ERROR)
     {
@@ -74,7 +75,7 @@ void escuta_dependente(ThreadState *ts, void *args)
         pthread_exit(NULL);
     }
 
-    estado_dep = parse_string_resposta(res_buff);
+    estado_dep = parse_string_estado(res_buff);
 
     pthread_exit(estado_dep);
 }
@@ -237,11 +238,11 @@ Estado *controla(Estado *e)
 // char *get_response(void *req, void *res_data)
 // {
 //     // le a resposta do servidor dependente
-//     Estado *request_dependente = parse_string_resposta((char *)req);
+//     Estado *request_dependente = parse_string_estado((char *)req);
 //     Estado *novo_estado_dependente = (Estado *)request_dependente;
 //     memcpy(req, novo_estado_dependente, sizeof(Estado));
 
 //     // envia a resposta do servidor principal
-//     char *res_str = tranformar_request_em_string((Estado *)res_data);
+//     char *res_str = transforma_estado_em_string((Estado *)res_data);
 //     return res_str;
 // }

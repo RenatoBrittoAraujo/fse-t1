@@ -111,15 +111,17 @@ void handle_interruption(int sinal)
     exit(0);
 }
 
-char *handle_request_servidor_principal(void *c_request, void *estado_dep)
+char *handle_request_servidor_principal(void *c_request, void *IGNORE_estado_dep)
 {
     log_print("[DEP] handle_request_servidor_principal()", LEVEL_DEBUG);
+    printf("c_request: %p", c_request);fflush(NULL);
 
-    Estado *e_novo = parse_string_resposta(c_request);
+    Estado *e_novo = parse_string_estado(c_request);
+    printf("e_novo: %p", e_novo);fflush(NULL);
 
     log_print("[DEP] novo estado recebido do servidor principal", LEVEL_DEBUG);
 
-    Estado *e = (Estado *)estado_dep;
+    Estado *e = (Estado *)c_request;
 
     e->num_vagas_andar_1 = e_novo->num_vagas_andar_1;
 
@@ -135,7 +137,9 @@ char *handle_request_servidor_principal(void *c_request, void *estado_dep)
 
     log_print("[DEP] estado antigo sobrescrito", LEVEL_DEBUG);
 
-    char *resposta = tranformar_request_em_string(e);
+    char *resposta = transforma_estado_em_string(e);
+
+    exit(1);
 
     return resposta;
 }
@@ -162,7 +166,7 @@ void escuta_main(ThreadState *ts, void *args)
         ip = e->ip_andar_2;
     }
 
-    t_error err = listen_tcp_ip_port(ip, porta, handle_request_servidor_principal, NULL, args);
+    t_error err = listen_tcp_ip_port(ip, porta, handle_request_servidor_principal, args, NULL);
 
     if (err)
     {

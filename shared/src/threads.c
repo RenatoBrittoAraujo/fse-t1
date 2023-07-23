@@ -90,7 +90,7 @@ int force_thread_end(ThreadState *ts)
 {
     if (ts->__running)
     {
-        pthread_exit(ts->thread_id);
+        pthread_exit(NULL);
         ts->__running = 0;
         return 1;
     }

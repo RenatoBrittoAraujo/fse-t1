@@ -3,7 +3,7 @@
 
 #include "shared/inc/proto.h"
 
-char *tranformar_request_em_string(Estado *req);
-Estado *parse_string_resposta(char *res_str);
+char *transforma_estado_em_string(Estado *req);
+Estado *parse_string_estado(char *res_str);
 
 #endif

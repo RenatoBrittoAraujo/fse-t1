@@ -20,37 +20,48 @@
 // res_buff may be NULL, response will not be set
 t_error call_tcp_ip_port(char *request, char *ip, int port, char *res_buff)
 {
-    log_print("[shared.tcp_ip] [listen_tcp_ip_port] call_tcp_ip_port()\n", LEVEL_DEBUG);
-    size_t message_size = sizeof(char) * MAX_FRAME_SIZE;
+    log_print("[shared.tcp_ip] [call_tcp_ip_port] call_tcp_ip_port()\n", LEVEL_DEBUG);
+    log_print("[shared.tcp_ip] [call_tcp_ip_port] ():1\n", LEVEL_DEBUG);
 
     int sock = 0, valread;
     struct sockaddr_in serv_addr;
-    char *buffer = (char *)malloc(message_size);
+    char buffer[MAX_FRAME_SIZE];
+    log_print("[shared.tcp_ip] [call_tcp_ip_port] ():2\n", LEVEL_DEBUG);
 
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
+        log_print("[shared.tcp_ip] [call_tcp_ip_port] ():ERRO1\n", LEVEL_DEBUG);
         return handle_error(SHARED_TCP_IP_ERROR_SOCKET_CREATION_FAILED, "[shared.tcp_ip] [call_tcp_ip_port] socket creation failed");
     }
 
+    log_print("[shared.tcp_ip] [call_tcp_ip_port] ():3\n", LEVEL_DEBUG);
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
+        log_print("[shared.tcp_ip] [call_tcp_ip_port] ():4\n", LEVEL_DEBUG);
 
     if (inet_pton(AF_INET, ip, &serv_addr.sin_addr) <= 0)
     {
+        log_print("[shared.tcp_ip] [call_tcp_ip_port] ():ERRO2\n", LEVEL_DEBUG);
         return handle_error(SHARED_TCP_IP_ERROR_INVALID_ADDRESS, "[shared.tcp_ip] [call_tcp_ip_port] address not found / invalid address");
     }
 
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
+        log_print("[shared.tcp_ip] [call_tcp_ip_port] ():ERRO3\n", LEVEL_DEBUG);
         return handle_error(SHARED_TCP_IP_ERROR_CONNECTION_FAILED, "[shared.tcp_ip] [call_tcp_ip_port] connection failed");
     }
 
+        log_print("[shared.tcp_ip] [call_tcp_ip_port] ():5\n", LEVEL_DEBUG);
     send(sock, request, strlen(request), 0);
-    valread = read(sock, buffer, 1024);
+        log_print("[shared.tcp_ip] [call_tcp_ip_port] ():6\n", LEVEL_DEBUG);
+    valread = read(sock, buffer, MAX_FRAME_SIZE);
+        log_print("[shared.tcp_ip] [call_tcp_ip_port] ():7\n", LEVEL_DEBUG);
     if (res_buff != NULL)
     {
-        memcpy(res_buff, buffer, message_size);
+        log_print("[shared.tcp_ip] [call_tcp_ip_port] ():8\n", LEVEL_DEBUG);
+        memcpy(res_buff, buffer, MAX_FRAME_SIZE);
     }
+        log_print("[shared.tcp_ip] [call_tcp_ip_port] ():9\n", LEVEL_DEBUG);
     return NO_ERROR;
 }
 
@@ -62,7 +73,7 @@ t_error listen_tcp_ip_port(char *ip, int port, char *(*get_response)(void *, voi
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
-    char buffer[1024] = {0};
+    char buffer[MAX_FRAME_SIZE] = {0};
 
     if ((server_fd = socket(AF_INET, SOCK_STREAM, 0)) == 0)
     {
@@ -101,13 +112,17 @@ t_error listen_tcp_ip_port(char *ip, int port, char *(*get_response)(void *, voi
         }
         log_print("[shared.tcp_ip] [listen_tcp_ip_port] request received\n", LEVEL_DEBUG);
 
-        valread = read(new_socket, buffer, 1024);
+        valread = read(new_socket, buffer, MAX_FRAME_SIZE);
+
+        log_print("[shared.tcp_ip] [listen_tcp_ip_port] valread\n", LEVEL_DEBUG);
+
         char *response = get_response(req, res_data);
         log_print("[shared.tcp_ip] [listen_tcp_ip_port] response created\n", LEVEL_DEBUG);
 
         send(new_socket, &response, strlen(response), 0);
         log_print("[shared.tcp_ip] [listen_tcp_ip_port] response sent\n", LEVEL_DEBUG);
 
+        free(response);
         close(new_socket);
     }
 
