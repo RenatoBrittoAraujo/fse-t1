@@ -189,7 +189,7 @@ ThreadState *cria_thread_listen(Estado *e)
 
 int atualiza_tempo(time_t *attr, int atualizar)
 {
-    log_print("[DEP] atualiza_tempo\n", LEVEL_DEBUG);
+    // log_print("[DEP] atualiza_tempo\n", LEVEL_DEBUG);
     if (atualizar)
         *attr = get_time_mcs();
     return atualizar;
@@ -209,6 +209,11 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
 
     int new_vagas = 0;
 
+    printf("          |-------------------------------|\n");
+    printf("vagas:    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |\n");
+    printf("          |-------------------------------|\n");
+    printf("ocupacao: |");
+
     // Itera por todas as vagas
     for (int i = 0; i < 8; i++)
     {
@@ -224,28 +229,27 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         bcm2835_gpio_write(end2, vend2);
         bcm2835_gpio_write(end3, vend3);
 
-        printf("%d %d %d\n",
-               bcm2835_gpio_lev(end3),
-               bcm2835_gpio_lev(end2),
-               bcm2835_gpio_lev(end1));
+        // printf("%d %d %d\n",
+        //        bcm2835_gpio_lev(end3),
+        //        bcm2835_gpio_lev(end2),
+        //        bcm2835_gpio_lev(end1));
 
         fflush(NULL);
-        wait_micro(5);
+        wait_micro(5000);
 
         int read = bcm2835_gpio_lev(INP_A1_SENSOR_VAGA);
-
+        int ocupado = read == LOW;
         if (read != LOW)
         {
             new_vagas = new_vagas | (1 << i);
-            printf("vaga %d está ocupada!\n", i + 1);
         }
-        else
-        {
-            printf("vaga %d está livre!\n", i + 1);
-        }
+        printf(" %d |", ocupado);
 
         fflush(NULL);
     }
+
+    printf("\n");
+    printf("          |-------------------------------|\n");
 
     if (id_andar == 1)
     {
@@ -336,10 +340,22 @@ int main()
     log_print("[DEP MAIN] servidor dependente rodando\n", LEVEL_DEBUG);
 
     time_t last_exec = 0;
+    char *ip;
+    int porta;
+    if (id_andar == 1)
+    {
+        ip = e->ip_andar_1;
+        porta = e->porta_andar_1;
+    }
+    else
+    {
+        ip = e->ip_andar_2;
+        porta = e->porta_andar_2;
+    }
 
     while (1)
     {
-        log_print("[DEP MAIN] chama le aplica estado\n", LEVEL_DEBUG);
+        printf("rodando em %s:%d\n", ip, porta);
         e = le_aplica_estado(e, id_andar);
 
         if (is_newer(PERIODO_MINIMO_ENTRE_EXECUCOES + last_exec))
@@ -349,5 +365,6 @@ int main()
             wait_micro(wait_time);
         }
         last_exec = get_time_mcs();
+        // printf("\e[1;1H\e[2J");
     }
 }

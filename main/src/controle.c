@@ -29,19 +29,6 @@ bool is_nova_conexao(Estado *e)
     return false;
 }
 
-char *get_response(void *req, void *res_data)
-{
-    // le a resposta do servidor dependente
-    Estado *request_dependente = parse_string_resposta((char *)req);
-    Estado *novo_estado_dependente = (Estado *)request_dependente;
-    memcpy(req, novo_estado_dependente, sizeof(Estado));
-
-    // envia a resposta do servidor principal
-    Estado *res = monta_request((Estado *)res_data);
-    char *res_str = tranformar_request_em_string(res);
-    return res_str;
-}
-
 void escuta_dependente(ThreadState *ts, void *args)
 {
     log_print("[MAIN THREAD] escuta_dependente()\n", LEVEL_DEBUG);
@@ -74,6 +61,9 @@ void escuta_dependente(ThreadState *ts, void *args)
 
     char *req = tranformar_request_em_string(estado_main);
     char *res_buff;
+
+    printf("chamando dependente no endereço: %s:%d\n", ip, porta);
+    fflush(NULL);
 
     t_error err = call_tcp_ip_port(req, ip, porta, res_buff);
 
@@ -197,17 +187,15 @@ Estado *controla(Estado *e)
     }
     e->estacionamento_lotado = is_todas_as_vagas_ocupadas(e);
 
-    log_print("[MAIN CONTROLA] escuta dependentes\n", LEVEL_DEBUG);
-
+    log_print("[MAIN CONTROLA] enviando request pros dependentes\n", LEVEL_DEBUG);
     e->t_dep_1->args = e->t_dep_2->args = e;
-
     start_thread(e->t_dep_1);
     start_thread(e->t_dep_2);
 
-    log_print("[MAIN CONTROLA] esperando mensagem do dependente 1\n", LEVEL_DEBUG);
+    log_print("[MAIN CONTROLA] esperando resposta do dependente 1\n", LEVEL_DEBUG);
     void *res_dep_1_void_p = wait_thread_response_with_deadline(e->t_dep_1, MCS_DEADLINE_RESPOSTA_DEPENDENTE);
 
-    log_print("[MAIN CONTROLA] esperando mensagem do dependente 2\n", LEVEL_DEBUG);
+    log_print("[MAIN CONTROLA] esperando resposta do dependente 2\n", LEVEL_DEBUG);
     void *res_dep_2_void_p = wait_thread_response_with_deadline(e->t_dep_2, MCS_DEADLINE_RESPOSTA_DEPENDENTE);
 
     if (res_dep_1_void_p == NULL)
@@ -245,3 +233,15 @@ Estado *controla(Estado *e)
 
     return e;
 }
+
+// char *get_response(void *req, void *res_data)
+// {
+//     // le a resposta do servidor dependente
+//     Estado *request_dependente = parse_string_resposta((char *)req);
+//     Estado *novo_estado_dependente = (Estado *)request_dependente;
+//     memcpy(req, novo_estado_dependente, sizeof(Estado));
+
+//     // envia a resposta do servidor principal
+//     char *res_str = tranformar_request_em_string((Estado *)res_data);
+//     return res_str;
+// }

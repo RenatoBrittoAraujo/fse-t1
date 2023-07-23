@@ -76,7 +76,7 @@ char *read_env_str_index(char *name, int index)
     if (val == NULL)
     {
         // sprintf(BUFF, "[read_env_str_index] NO KEY FOR ENV VAR '%s'\n", key);
-        log_print(BUFF, 1);
+        // log_print(BUFF, 1);
         return NULL;
     }
     // sprintf(BUFF, "[read_env_str_index] KEY VAL '%s = %s'\n", key, val);
