@@ -8,6 +8,7 @@
 #include "shared/inc/threads.h"
 #include "shared/inc/shared_util.h"
 #include "shared/inc/tcp_ip.h"
+#include "shared/inc/proto.h"
 
 #define PERIODO_MINIMO_ENTRE_EXECUCOES 100 * MILLI
 
@@ -22,9 +23,10 @@
 #define OUT_A1_SINAL_DE_LOTADO_FECHADO 27
 #define INP_A1_SENSOR_ABERTURA_CANCELA_ENTRADA 23
 #define INP_A1_SENSOR_FECHAMENTO_CANCELA_ENTRADA 24
-#define OUT_A1_MOTOR_CANCELA_ENTRADA 10
 #define INP_A1_SENSOR_ABERTURA_CANCELA_SAIDA 25
-#define INP_A1_SENSOR_FECHAMENTO_CGPIO .setmodeANCELA_SAIDA 12
+#define INP_A1_SENSOR_FECHAMENTO_CANCELA_SAIDA 25
+#define OUT_A1_MOTOR_CANCELA_ENTRADA 10
+#define INP_A1_SENSOR_FECHAMENTO_GPIO 12
 #define OUT_A1_MOTOR_CANCELA_SAIDA 17
 
 #define OUT_A2_ENDERECO_01 13
@@ -68,35 +70,9 @@
 #endif
 // ========== TERMINA CONFIG DE PINOS =============
 
-// ========== COMEÇA CONFIG DE AMBIENTE =============
-#ifdef TEST_MODE
-
-// CONFIG DE TESTE
-// #include <test_time_util.h>
-
-#define BCM2835_GPIO_FSEL_OUTP 1
-#define BCM2835_GPIO_FSEL_INPT 0
-
-void bcm2835_gpio_fsel(uint8_t pin, uint8_t mode) { log_print("[BCM MOCK] bcm2835_gpio_fsel()\n", LEVEL_DEBUG); }
-int bcm2835_close(void) { log_print("[BCM MOCK] bcm2835_close()\n", LEVEL_DEBUG); }
-int bcm2835_init(void)
-{
-    log_print("[BCM MOCK] bcm2835_init()\n", LEVEL_DEBUG);
-    return 1;
-}
-int bcm2835_gpio_lev(uint8_t pin) { log_print("[BCM MOCK] bcm2835_gpio_lev()\n", LEVEL_DEBUG); }
-void bcm2835_gpio_write(uint8_t pin, uint8_t on) { log_print("[BCM MOCK] bcm2835_gpio_write()\n", LEVEL_DEBUG); }
-
-#else
-
-// CONFIG DE PROD
-
 #include <bcm2835.h>
 
 #include "shared/inc/time.h"
-
-#endif
-// ========== TERMINA CONFIG DE AMBIENTE =============
 
 #define TEMPO_ESPERA_DETECTOR_VAGA 10
 
@@ -129,76 +105,63 @@ void handle_interruption(int sinal)
 {
     log_print("[DEP] handle_interruption\n", LEVEL_DEBUG);
     bcm2835_close();
-    printf("interruption! %d\n", sinal);
+    printf("[DEP] interruption! %d\n", sinal);
     exit(0);
 }
 
-EstadoEstacionamento *request = NULL;
-char *resposta = NULL;
-char *get_resposta(void *c_request)
+char *handle_request_servidor_principal(void *c_request, void *estado_dep)
 {
-    char *n_request = NULL;
-    log_print("[DEP] get_resposta\n", LEVEL_DEBUG);
-    if (c_request != NULL)
-    {
-        log_print("[DEP] get_resposta memcpy\n", LEVEL_DEBUG);
-        n_request = (char *)malloc(sizeof(EstadoEstacionamento));
-        memcpy(n_request, c_request, sizeof(EstadoEstacionamento));
-        log_print("[DEP] request setada\n", LEVEL_DEBUG);
-    }
-    if (request != NULL)
-    {
-        log_print("[DEP] limpa antiga request\n", LEVEL_DEBUG);
-        free(request);
-    }
-    log_print("[DEP] seta nova request\n", LEVEL_DEBUG);
-    request = c_request;
-    log_print("[DEP] request feita\n", LEVEL_DEBUG);
+    log_print("[DEP] handle_request_servidor_principal()", LEVEL_DEBUG);
 
-    log_print("[DEP] get_resposta\n", LEVEL_DEBUG);
+    EstadoEstacionamento *e = parse_string_resposta(c_request);
+
+    log_print("[DEP] novo estado recebido do servidor principal", LEVEL_DEBUG);
+
+    // estado do andar é enviado
+    char *resposta = tranformar_request_em_string(estado_dep);
+
+    // novo estado sobrescreve antigo estado
+    memcpy(estado_dep, e, sizeof(EstadoEstacionamento));
+    memcpy(estado_dep->andares[0], e->andares[0], sizeof(EstadoEstacionamento));
+    memcpy(estado_dep->andares[1], e->andares[1], sizeof(EstadoEstacionamento));
+    memcpy(estado_dep->entrada, e->entradas, sizeof(EstadoEstacionamento));
+
     return resposta;
-}
-
-void set_resposta(EstadoEstacionamento *e)
-{
-    log_print("[DEP] set_resposta\n", LEVEL_DEBUG);
-    if (resposta == NULL)
-    {
-        log_print("[DEP] aloca resposta\n", LEVEL_DEBUG);
-        resposta = (char *)malloc(sizeof(EstadoEstacionamento));
-    }
-    if (e != NULL)
-    {
-
-        log_print("[DEP] memcpy resposta\n", LEVEL_DEBUG);
-        memcpy(resposta, e, sizeof(EstadoEstacionamento));
-    }
-    log_print("[DEP] fim set_resposta\n", LEVEL_DEBUG);
 }
 
 void escuta_main(ThreadState *ts, void *args)
 {
     log_print("[DEP] escuta_main\n", LEVEL_DEBUG);
 
-    EstadoEstacionamento *req = (EstadoEstacionamento *)args;
-    
-    printf("FAZ REQUEST PARA IP:PORTA %s:%d\n", e->endereco->ip, e->endereco->porta);
+    EstadoEstacionamento *e = (EstadoEstacionamento *)args;
 
-    fflush(NULL);
-    log_print("[DEP] deu parse do estacionamento\n", LEVEL_DEBUG);
-    listen_tcp_ip_port(get_resposta, e->endereco->ip, e->endereco->porta);
-    log_print("[DEP] escutando porta!\n", LEVEL_DEBUG);
+    int ator_atual = e->ator_atual;
+
+    int porta = req->endereco->porta;
+    char *ip = req->endereco->ip;
+
+    error_t err = listen_tcp_ip_port(ip, porta, handle_request_servidor_principal, NULL, args);
+
+    if (err)
+    {
+        printf("[DEP] erro %lu no listen_tcp_ip_port() do dependente\n", err);
+        fflush(NULL);
+        pthread_exit(NULL);
+    }
+
+    printf("Servidor dependende rodando no endereco %s:%d\n", req->endereco->ip, req->endereco->porta);
 
     pthread_exit(res);
-    
 }
 
-ThreadState *ThreadState *t = abrir_thread_server_dependente(EstadoEstacionamento * e)
+ThreadState *ThreadState *t = cria_thread_listen(EstadoEstacionamento * e)
 {
-    log_print("[DEP] ThreadState* t = abrir_thread_server_dependente\n", LEVEL_DEBUG);
+    log_print("[DEP] ThreadState* t = cria_thread_listen\n", LEVEL_DEBUG);
     ThreadState *t = create_thread_state(-1);
     e->t_main = t;
     t->routine = escuta_main;
+    t->args = e;
+    start_thread(t);
     return t;
 }
 
@@ -318,6 +281,9 @@ EstadoEstacionamento *le_aplica_estado(EstadoEstacionamento *e, int id_andar)
         bcm2835_gpio_write(OUT_A2_SINAL_DE_LOTADO_FECHADO, e->estacionamento_fechado || e->estacionamento_lotado);
     }
 
+    e->tempo_ultima_execucao = get_time_mcs();
+    e->ator_atual = id_andar == 1 ? ATOR_DEP1 : ATOR_DEP2;
+
     return e;
 }
 
@@ -330,7 +296,6 @@ int main()
 
     if (!bcm2835_init())
         exit(1);
-
     log_print("[DEP MAIN] bcm iniciado\n", LEVEL_INFO);
 
     configura_pinos();
@@ -340,20 +305,18 @@ int main()
     log_print("[DEP MAIN] signal settado\n", LEVEL_INFO);
 
     id_andar = read_env_int_index("ID_ANDAR", -1);
+    int ator_atual = id_andar == 2 ? ATOR_DEP2 : ATOR_DEP1;
+
     char BUFF[1000];
     sprintf(BUFF, "%s%d", "ANDAR_", id_andar);
     log_print(BUFF, 1);
 
-    int ator_atual = ATOR_DEP1;
-    if (id_andar == 2)
-        ator_atual = ATOR_DEP2;
-
+    log_print("[DEP MAIN] estado inicializado\n", LEVEL_INFO);
     EstadoEstacionamento *e = inicializar_estado(BUFF, ator_atual);
 
-    log_print("[DEP MAIN] estado inicializado\n", LEVEL_INFO);
-
-    ThreadState *t = abrir_thread_server_dependente(e);
-    log_print("[DEP MAIN] thread de abrir porta chamada\n", LEVEL_DEBUG);
+    log_print("[DEP MAIN] abrindo porta\n", LEVEL_DEBUG);
+    ThreadState *t = cria_thread_listen(e);
+    log_print("[DEP MAIN] servidor dependente rodando\n", LEVEL_DEBUG);
 
     time_t last_exec = 0;
 
@@ -361,22 +324,6 @@ int main()
     {
         log_print("[DEP MAIN] chama le aplica estado\n", LEVEL_DEBUG);
         e = le_aplica_estado(e, id_andar);
-
-        log_print("[DEP MAIN] configura request para servidor principal\n", LEVEL_DEBUG);
-        t->args = e;
-
-        start_thread(t);
-        void *res = wait_thread_response_with_deadline(t, MCS_DESCONEXAO);
-
-        if (res == NULL)
-        {
-            log_print("[DEP MAIN] servidor principal não respondeu\n", LEVEL_DEBUG);
-        }
-        else
-        {
-            log_print("[DEP MAIN] servidor principal respondeu, novo estado registrado\n", LEVEL_DEBUG);
-            e = (EstadoEstacionamento *)res;
-        }
 
         if (is_newer(PERIODO_MINIMO_ENTRE_EXECUCOES + last_exec))
         {

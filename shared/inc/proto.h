@@ -20,88 +20,56 @@
 #define ATOR_DEP2 3
 
 // ======= CONTROLE
-struct Endereco
+
+struct EstadoEstacionamento
 {
-    char *ip;
-    int porta;
-};
-typedef struct Endereco Endereco;
+    // identificador de qual ator executou a ultima acao
+    // do estado atual: ATOR_MAIN, ATOR_DEP1, ATOR_DEP2
+    int ator_atual;
 
-struct EstadoAndar
-{
-    int id_andar;
+    // identificador de quando foi exectuado a ultima acao
+    int tempo_ultima_execucao;
 
-    int *vagas;
-    int num_vagas;
+    // dados servidor principal
+    int num_andares; // que é 2
+    int estacionamento_fechado;
+    int estacionamento_lotado;
 
-    int andar_lotado;
-    int andar_fechado;
+    // entradas para andar 1
+    int num_vagas_andar_1;
+    int andar_1_fechado;
+    int motor_cancela_entrada_ligado;
+    int motor_cancela_saida_ligado;
 
-    Endereco *endereco;
-};
-typedef struct EstadoAndar EstadoAndar;
-
-struct EstadoEntrada
-{
-    int id_andar;
-
+    // saidas do andar 1
+    int andar_1_lotado;
+    int vagas_andar_1;
     time_t sensor_de_presenca_entrada;
     time_t sensor_de_presenca_saida;
     time_t sensor_de_passagem_entrada;
     time_t sensor_de_passagem_saida;
 
-    int motor_entrada_ligado;
-    int motor_saida_ligado;
+    // entradas para andar 2
+    int num_vagas_andar_2;
+    int vagas_andar_2;
+    int andar_2_fechado;
+    time_t sensor_de_subida_de_andar;
+    time_t sensor_de_descida_de_andar;
 
-    Endereco *endereco;
-};
-typedef struct EstadoEntrada EstadoEntrada;
+    // entradas do andar 2
+    int andar_2_lotado;
 
-struct EstadoEstacionamento
-{
-    // ATOR_MAIN, ATOR_DEP1, ATOR_DEP2
-    int ator_atual;
-
-    int num_andares;
-    int tempo_ultima_execucao;
-
-    int estacionamento_fechado;
-    int estacionamento_lotado;
-
-    // note que o número de sensores desse tipo é
-    // exatamente 1 menor que o número de andares
-    // quando o valor no indice i é diferente
-    // entre cada um dos vetores, significa que
-    // o número maior está aguardando o menor.
-    // em teoria, essa diferença deveria ser
-    // apenas 1 devido a natureza do problema
-    int *sensor_de_subida_de_andar;
-    int *sensor_de_descida_de_andar;
-    time_t tempo_sensores_de_andar_atualizados;
-
-    EstadoAndar **andares;
-    EstadoEntrada *entrada;
-
-    Endereco *endereco;
+    // comum
+    int porta_andar_1;
+    int porta_andar_2;
+    char *ip_andar_1;
+    char *ip_andar_2;
 
     ThreadState *t_main;
     ThreadState *t_dep_1;
     ThreadState *t_dep_2;
 };
 typedef struct EstadoEstacionamento EstadoEstacionamento;
-
-// ======= COMUNICACAO
-struct MensagemOut
-{
-    EstadoEstacionamento *e;
-};
-typedef struct MensagemOut MensagemOut;
-
-struct MensagemIn
-{
-    EstadoEstacionamento *e;
-};
-typedef struct MensagemIn MensagemIn;
 
 // ======= INTERFACE
 struct EstadoInterface
@@ -111,6 +79,7 @@ struct EstadoInterface
 typedef struct EstadoInterface EstadoInterface;
 
 EstadoEstacionamento *inicializar_estado(char *env_name, int ator_atual);
+
 EstadoEstacionamento *copiar_estado(EstadoEstacionamento *e);
 
 #endif

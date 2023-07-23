@@ -8,22 +8,16 @@
 #include "shared/inc/shared_util.h"
 #include "shared/inc/tcp_ip.h"
 
-MensagemIn *monta_request(EstadoEstacionamento *e)
-{
-    MensagemIn *req = (MensagemIn *)malloc(sizeof(MensagemIn));
-    return req;
-}
-
-char *tranformar_request_em_string(MensagemIn *req)
+char *tranformar_request_em_string(EstadoEstacionamento *req)
 {
     char *frame = (char *)malloc(MAX_FRAME_SIZE * sizeof(char));
     memcpy(frame, &req, sizeof(frame));
     return frame;
 }
 
-MensagemOut *parse_string_resposta(char *res_str)
+EstadoEstacionamento *parse_string_resposta(char *res_str)
 {
-    MensagemOut *res = (MensagemOut *)malloc(sizeof(MensagemOut));
+    EstadoEstacionamento *res = (EstadoEstacionamento *)malloc(sizeof(EstadoEstacionamento));
     memcpy(res_str, &res, sizeof(res_str));
     return res;
 }

@@ -72,7 +72,8 @@ void escuta_dependente(ThreadState *ts, void *args)
         pthread_exit(NULL);
     }
 
-    t_error err = listen_tcp_ip_port(get_response, ip, porta, (void *)estado_main, (void *)estado_dep);
+    // t_error err = listen_tcp_ip_port(get_response, ip, porta, (void *)estado_main, (void *)estado_dep);
+    t_error err = call_tcp_ip_port(estado_main, ip, porta, estado_dep);
 
     if (err != NO_ERROR)
     {
