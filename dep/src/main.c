@@ -12,6 +12,9 @@
 #include "shared/inc/comm.h"
 #include "shared/inc/errors.h"
 
+#define DEBUG 1
+#define IF_DEBUG if(DEBUG)
+
 #define PERIODO_MINIMO_ENTRE_EXECUCOES 100 * MILLI
 
 // ========== COMEÇA CONFIG DE PINOS =============
