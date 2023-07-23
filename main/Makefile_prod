@@ -1,7 +1,7 @@
 CC=gcc
 TARGET=main_prod
 SRCEXT=c
-LIB=-l pthread
+LIB=-l pthread -l curses
 INC=-I ../
 BUILDDIR=obj
 SRCDIR=src

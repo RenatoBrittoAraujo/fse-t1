@@ -3,6 +3,7 @@
 #include <poll.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <curses.h>
 
 #include "shared/inc/shared_util.h"
 #include "shared/inc/time.h"
@@ -12,7 +13,7 @@
 
 #define NONE '\0'
 #define TOGGLE_ESTACIONAMENTO '0';
-#define DRAW_FREQUENCY 100 
+#define DRAW_FREQUENCY 100
 
 int initialized = 0;
 time_t last_draw = 0;
@@ -26,7 +27,7 @@ int should_draw()
     printf("       last_draw + DRAW_FREQUENCY: %ld      \n", last_draw + DRAW_FREQUENCY);
     printf("       last_draw + DRAW_FREQUENCY - now: %ld      \n", last_draw + DRAW_FREQUENCY - now);
     fflush(NULL);
-    return last_draw + DRAW_FREQUENCY <= now ;
+    return last_draw + DRAW_FREQUENCY <= now;
 }
 
 void init()
@@ -34,8 +35,6 @@ void init()
     if (!initialized)
     {
         initialized = 1;
-        // transforma leitura de input em non-blocking
-        fcntl(0, F_SETFL, O_NONBLOCK);
     }
 }
 
@@ -43,15 +42,22 @@ void init()
 // note que apenas 1 caractere é lido, não deve ser problema.
 char get_inp_char()
 {
-    char buff[1];
-    if (read(0, buff, 1) < 1)
-        return NONE;
-    return buff[0];
+    int c = getch();
+    printf("READ CHARACTER: %d\n", c);
+    if (c != EOF)
+        return c;
+    return NONE;
+    // char buff[1];
+    // if (read(0, buff, 1) < 1)
+    //     return NONE;
+    // return buff[0];
 }
 
 void desenha_interface(Estado *e)
 {
-    if (!should_draw()) {}
+    if (!should_draw())
+    {
+    }
     // ====== DISPLAY
     printf("|------------ GERENCIADOR DE ESTACIONAMENTO ------------|\n");
 
