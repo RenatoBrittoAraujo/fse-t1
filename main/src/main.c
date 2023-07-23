@@ -12,7 +12,7 @@ int main()
     set_level(LEVEL_DEBUG);
     set_time_wait_ignore(0);
 
-    EstadoEstacionamento *e = NULL;
+    Estado *e = NULL;
     while (1)
     {
         e = controla(e);

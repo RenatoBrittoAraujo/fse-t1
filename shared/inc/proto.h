@@ -21,7 +21,7 @@
 
 // ======= CONTROLE
 
-struct EstadoEstacionamento
+struct Estado
 {
     // identificador de qual ator executou a ultima acao
     // do estado atual: ATOR_MAIN, ATOR_DEP1, ATOR_DEP2
@@ -69,17 +69,17 @@ struct EstadoEstacionamento
     ThreadState *t_dep_1;
     ThreadState *t_dep_2;
 };
-typedef struct EstadoEstacionamento EstadoEstacionamento;
+typedef struct Estado Estado;
 
 // ======= INTERFACE
 struct EstadoInterface
 {
-    EstadoEstacionamento *e;
+    Estado *e;
 };
 typedef struct EstadoInterface EstadoInterface;
 
-EstadoEstacionamento *inicializar_estado(char *env_name, int ator_atual);
+Estado *inicializar_estado(char *env_name, int ator_atual);
 
-EstadoEstacionamento *copiar_estado(EstadoEstacionamento *e);
+Estado *copiar_estado(Estado *e);
 
 #endif

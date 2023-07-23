@@ -4,9 +4,9 @@
 #include "shared/inc/proto.h"
 #include "shared/inc/shared_util.h"
 
-EstadoEstacionamento *inicializar_estado(char *env_name, int ator_atual)
+Estado *inicializar_estado(char *env_name, int ator_atual)
 {
-    EstadoEstacionamento *e = (EstadoEstacionamento *)malloc(sizeof(EstadoEstacionamento));
+    Estado *e = (Estado *)malloc(sizeof(Estado));
 
     e->ator_atual = ator_atual;
     e->tempo_ultima_execucao = -MCS_DESCONEXAO - 1;
@@ -47,10 +47,10 @@ EstadoEstacionamento *inicializar_estado(char *env_name, int ator_atual)
     return e;
 }
 
-EstadoEstacionamento *copiar_estado(EstadoEstacionamento *e)
+Estado *copiar_estado(Estado *e)
 {
     log_print("[PROTO.C] copiar_estado\n", LEVEL_DEBUG);
-    EstadoEstacionamento *ne = (EstadoEstacionamento *)malloc(sizeof(EstadoEstacionamento));
-    memcpy(ne, e, sizeof(EstadoEstacionamento));
+    Estado *ne = (Estado *)malloc(sizeof(Estado));
+    memcpy(ne, e, sizeof(Estado));
     return ne;
 }

@@ -34,7 +34,7 @@ char get_inp_char()
     return buff[0];
 }
 
-void desenha_interface(EstadoEstacionamento *e)
+void desenha_interface(Estado *e)
 {
     // ====== DISPLAY
     printf("=== GERENCIADOR DE ESTACIONAMENTO ===");
@@ -67,7 +67,7 @@ void desenha_interface(EstadoEstacionamento *e)
     log_print("----------- FIM -----------()\n", LEVEL_DEBUG);
 }
 
-EstadoEstacionamento *ler_comando(EstadoEstacionamento *e)
+Estado *ler_comando(Estado *e)
 {
 
     printf("Comandos:\n");
@@ -109,7 +109,7 @@ EstadoEstacionamento *ler_comando(EstadoEstacionamento *e)
     return e;
 }
 
-EstadoEstacionamento *processar_interface(EstadoEstacionamento *e)
+Estado *processar_interface(Estado *e)
 {
     desenha_interface(e);
     e = ler_comando(e);

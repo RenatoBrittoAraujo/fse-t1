@@ -3,6 +3,6 @@
 
 #include "shared/inc/proto.h"
 
-EstadoEstacionamento *processar_interface(EstadoEstacionamento *e);
+Estado *processar_interface(Estado *e);
 
 #endif

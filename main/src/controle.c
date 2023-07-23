@@ -15,7 +15,7 @@ void set_entradas_inicial()
     log_print("[MAIN] set_entradas_inicial()\n", LEVEL_DEBUG);
 }
 
-bool is_nova_conexao(EstadoEstacionamento *e)
+bool is_nova_conexao(Estado *e)
 {
     log_print("[MAIN] is_nova_conexao()\n", LEVEL_DEBUG);
     if (e == NULL)
@@ -32,12 +32,12 @@ bool is_nova_conexao(EstadoEstacionamento *e)
 char *get_response(void *req, void *res_data)
 {
     // le a resposta do servidor dependente
-    EstadoEstacionamento *request_dependente = parse_string_resposta((char *)req);
-    EstadoEstacionamento *novo_estado_dependente = (EstadoEstacionamento *)request_dependente->e;
-    memcpy(req, novo_estado_dependente, sizeof(EstadoEstacionamento));
+    Estado *request_dependente = parse_string_resposta((char *)req);
+    Estado *novo_estado_dependente = (Estado *)request_dependente;
+    memcpy(req, novo_estado_dependente, sizeof(Estado));
 
     // envia a resposta do servidor principal
-    EstadoEstacionamento *res = monta_request((EstadoEstacionamento *)res_data);
+    Estado *res = monta_request((Estado *)res_data);
     char *res_str = tranformar_request_em_string(res);
     return res_str;
 }
@@ -46,8 +46,8 @@ void escuta_dependente(ThreadState *ts, void *args)
 {
     log_print("[MAIN THREAD] escuta_dependente()\n", LEVEL_DEBUG);
 
-    EstadoEstacionamento *estado_main = (EstadoEstacionamento *)args;
-    EstadoEstacionamento *estado_dep = NULL;
+    Estado *estado_main = (Estado *)args;
+    Estado *estado_dep = NULL;
 
     char *ip;
     int porta;
@@ -59,12 +59,12 @@ void escuta_dependente(ThreadState *ts, void *args)
     switch (dependente)
     {
     case ATOR_DEP1:
-        ip = estado_main->andares[0]->endereco->ip;
-        porta = estado_main->andares[0]->endereco->porta;
+        ip = estado_main->ip_andar_1;
+        porta = estado_main->porta_andar_1;
         break;
     case ATOR_DEP2:
-        ip = estado_main->andares[1]->endereco->ip;
-        porta = estado_main->andares[1]->endereco->porta;
+        ip = estado_main->ip_andar_2;
+        porta = estado_main->porta_andar_2;
         break;
     default:
         printf("[MAIN THREAD] ator para se escutar desconhecido. thread_id: %d\n", ts->thread_id);
@@ -72,8 +72,10 @@ void escuta_dependente(ThreadState *ts, void *args)
         pthread_exit(NULL);
     }
 
-    // t_error err = listen_tcp_ip_port(get_response, ip, porta, (void *)estado_main, (void *)estado_dep);
-    t_error err = call_tcp_ip_port(estado_main, ip, porta, estado_dep);
+    char *req = tranformar_request_em_string(estado_main);
+    char *res_buff;
+
+    t_error err = call_tcp_ip_port(req, ip, porta, res_buff);
 
     if (err != NO_ERROR)
     {
@@ -82,15 +84,17 @@ void escuta_dependente(ThreadState *ts, void *args)
         pthread_exit(NULL);
     }
 
+    estado_dep = parse_string_resposta(res_buff);
+
     pthread_exit(estado_dep);
 }
 
-ThreadState *criar_thread_comunicar_dependente(EstadoEstacionamento *e)
+ThreadState *criar_thread_comunicar_dependente(Estado *e)
 {
     log_print("[MAIN] criar_thread_comunicar_dependente()\n", LEVEL_DEBUG);
 
     ThreadState *t = create_thread_state(-1);
-    t->response_size = sizeof(EstadoEstacionamento);
+    t->response_size = sizeof(Estado);
     t->routine = escuta_dependente;
     t->args = copiar_estado(e);
 
@@ -100,34 +104,26 @@ ThreadState *criar_thread_comunicar_dependente(EstadoEstacionamento *e)
 
 // ================== MODIFICAR ESTADO ==================
 
-int is_todas_as_vagas_andar_ocupadas(EstadoAndar *a)
+int is_todas_as_vagas_andar_ocupadas(Estado *e, int id_andar)
 {
     log_print("[MAIN] is_todas_as_vagas_andar_ocupadas()\n", LEVEL_DEBUG);
-    int nv = 0;
-    for (int i = 0; i < a->num_vagas; i++)
-    {
-        nv += a->vagas[i];
-    }
-    return nv == a->num_vagas;
+    int vagas = id_andar == 1 ? e->vagas_andar_1 : e->vagas_andar_2;
+    return 0xff == vagas;
 }
 
-int is_todas_as_vagas_ocupadas(EstadoEstacionamento *e)
+int is_todas_as_vagas_ocupadas(Estado *e)
 {
     log_print("[MAIN] is_todas_as_vagas_ocupadas()\n", LEVEL_DEBUG);
-    printf("e->num_andares = %d\n", e->num_andares);
-    fflush(NULL);
-    int nv = 0;
-    for (int i = 0; i < e->num_andares; i++)
-    {
-        nv += is_todas_as_vagas_andar_ocupadas(e->andares[i]);
-    }
-    return nv == e->num_andares;
+    int nv = 1;
+    for (int i = 1; i <= 2; i++)
+        nv = nv && is_todas_as_vagas_andar_ocupadas(e, i);
+    return nv;
 }
 
-int is_sensor_de_presenca_na_saida_ocupado(EstadoEstacionamento *e)
+int is_sensor_de_presenca_na_saida_ocupado(Estado *e)
 {
     log_print("[MAIN] is_sensor_de_presenca_na_saida_ocupado()\n", LEVEL_DEBUG);
-    e->entrada->motor_saida_ligado = 0;
+    e->motor_cancela_saida_ligado = 0;
 }
 
 int get_estado_motor_cancela(time_t sensor_de_presenca, time_t sensor_de_passagem)
@@ -144,26 +140,26 @@ int get_estado_motor_cancela(time_t sensor_de_presenca, time_t sensor_de_passage
     return 0;
 }
 
-int decidir_estado_motor_cancela_saida(EstadoEstacionamento *e)
+int decidir_estado_motor_cancela_saida(Estado *e)
 {
     log_print("[MAIN] decidir_estado_motor_cancela_saida()\n", LEVEL_DEBUG);
 
-    if (is_newer(MCS_MAXIMO_CANCELA_ABERTA + e->entrada->sensor_de_presenca_saida))
+    if (is_newer(MCS_MAXIMO_CANCELA_ABERTA + e->sensor_de_presenca_saida))
     {
-        e->entrada->motor_saida_ligado = 1;
+        e->motor_cancela_saida_ligado = 1;
     }
     else
     {
-        if (!is_newer(MCS_MAXIMO_CANCELA_ABERTA + e->entrada->sensor_de_passagem_saida))
+        if (!is_newer(MCS_MAXIMO_CANCELA_ABERTA + e->sensor_de_passagem_saida))
         {
-            e->entrada->motor_saida_ligado = 0;
+            e->motor_cancela_entrada_ligado = 0;
         }
     }
 }
 
 // ================== FIM MODIFICAR ESTADO ==================
 
-EstadoEstacionamento *controla(EstadoEstacionamento *e)
+Estado *controla(Estado *e)
 {
     log_print("[MAIN] controla()\n", LEVEL_DEBUG);
 
@@ -179,13 +175,13 @@ EstadoEstacionamento *controla(EstadoEstacionamento *e)
 
     // ========= CANCELAS
 
-    e->entrada->motor_entrada_ligado = get_estado_motor_cancela(
-        e->entrada->sensor_de_presenca_entrada,
-        e->entrada->sensor_de_passagem_entrada);
+    e->motor_cancela_entrada_ligado = get_estado_motor_cancela(
+        e->sensor_de_presenca_entrada,
+        e->sensor_de_passagem_entrada);
 
-    e->entrada->motor_saida_ligado = get_estado_motor_cancela(
-        e->entrada->sensor_de_presenca_saida,
-        e->entrada->sensor_de_passagem_saida);
+    e->motor_cancela_saida_ligado = get_estado_motor_cancela(
+        e->sensor_de_presenca_saida,
+        e->sensor_de_passagem_saida);
 
     // ========= VAGAS
 
@@ -196,15 +192,15 @@ EstadoEstacionamento *controla(EstadoEstacionamento *e)
         sprintf(buff, "[MAIN CONTROLA] Analisando vagas do andar %d\n", i);
         log_print(buff, LEVEL_DEBUG);
 
-        EstadoAndar *a = e->andares[i - 1];
-        int andar_lotado = is_todas_as_vagas_andar_ocupadas(a);
+        int andar_lotado = is_todas_as_vagas_andar_ocupadas(e, i);
         todos_andares_lotados *= andar_lotado;
-        a->andar_lotado = andar_lotado;
     }
     e->estacionamento_lotado = is_todas_as_vagas_ocupadas(e);
 
     log_print("[MAIN CONTROLA] escuta dependentes\n", LEVEL_DEBUG);
+
     e->t_dep_1->args = e->t_dep_2->args = e;
+
     start_thread(e->t_dep_1);
     start_thread(e->t_dep_2);
 
@@ -226,8 +222,8 @@ EstadoEstacionamento *controla(EstadoEstacionamento *e)
         exit(1);
     }
 
-    EstadoEstacionamento *res_dep_1 = (EstadoEstacionamento *)res_dep_1_void_p;
-    EstadoEstacionamento *res_dep_2 = (EstadoEstacionamento *)res_dep_2_void_p;
+    Estado *res_dep_1 = (Estado *)res_dep_1_void_p;
+    Estado *res_dep_2 = (Estado *)res_dep_2_void_p;
 
     log_print("[MAIN CONTROLA] respostas recebidas, combinando resultados\n", LEVEL_DEBUG);
 

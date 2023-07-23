@@ -3,6 +3,6 @@
 
 #include "shared/inc/proto.h"
 
-EstadoEstacionamento *controla(EstadoEstacionamento *e);
+Estado *controla(Estado *e);
 
 #endif

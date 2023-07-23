@@ -8,16 +8,16 @@
 #include "shared/inc/shared_util.h"
 #include "shared/inc/tcp_ip.h"
 
-char *tranformar_request_em_string(EstadoEstacionamento *req)
+char *tranformar_request_em_string(Estado *req)
 {
     char *frame = (char *)malloc(MAX_FRAME_SIZE * sizeof(char));
     memcpy(frame, &req, sizeof(frame));
     return frame;
 }
 
-EstadoEstacionamento *parse_string_resposta(char *res_str)
+Estado *parse_string_resposta(char *res_str)
 {
-    EstadoEstacionamento *res = (EstadoEstacionamento *)malloc(sizeof(EstadoEstacionamento));
+    Estado *res = (Estado *)malloc(sizeof(Estado));
     memcpy(res_str, &res, sizeof(res_str));
     return res;
 }

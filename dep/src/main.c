@@ -115,11 +115,11 @@ char *handle_request_servidor_principal(void *c_request, void *estado_dep)
 {
     log_print("[DEP] handle_request_servidor_principal()", LEVEL_DEBUG);
 
-    EstadoEstacionamento *e_novo = parse_string_resposta(c_request);
+    Estado *e_novo = parse_string_resposta(c_request);
 
     log_print("[DEP] novo estado recebido do servidor principal", LEVEL_DEBUG);
 
-    EstadoEstacionamento *e = (EstadoEstacionamento *)estado_dep;
+    Estado *e = (Estado *)estado_dep;
 
     e->num_vagas_andar_1 = e_novo->num_vagas_andar_1;
 
@@ -144,7 +144,7 @@ void escuta_main(ThreadState *ts, void *args)
 {
     log_print("[DEP] escuta_main\n", LEVEL_DEBUG);
 
-    EstadoEstacionamento *e = (EstadoEstacionamento *)args;
+    Estado *e = (Estado *)args;
 
     int ator_atual = e->ator_atual;
 
@@ -176,7 +176,7 @@ void escuta_main(ThreadState *ts, void *args)
     pthread_exit(NULL);
 }
 
-ThreadState *cria_thread_listen(EstadoEstacionamento *e)
+ThreadState *cria_thread_listen(Estado *e)
 {
     log_print("[DEP] ThreadState* t = cria_thread_listen\n", LEVEL_DEBUG);
     ThreadState *t = create_thread_state(-1);
@@ -195,7 +195,7 @@ int atualiza_tempo(time_t *attr, int atualizar)
     return atualizar;
 }
 
-EstadoEstacionamento *le_aplica_estado(EstadoEstacionamento *e, int id_andar)
+Estado *le_aplica_estado(Estado *e, int id_andar)
 {
     log_print("[DEP] le_aplica_estado iniciando\n", LEVEL_DEBUG);
 
@@ -329,7 +329,7 @@ int main()
     log_print(BUFF, 1);
 
     log_print("[DEP MAIN] estado inicializado\n", LEVEL_INFO);
-    EstadoEstacionamento *e = inicializar_estado(BUFF, ator_atual);
+    Estado *e = inicializar_estado(BUFF, ator_atual);
 
     log_print("[DEP MAIN] abrindo porta\n", LEVEL_DEBUG);
     ThreadState *t = cria_thread_listen(e);
