@@ -45,19 +45,6 @@ O sistema é composto de 3 apis.
 
 Sendo a api central o código encontrado na pasta `main` e a dependente no `dep`.
 
-
-Deu **muito** trabalho pra implementar a interface com comandos. Mas agora funciona. É só apertar a tecla com o terminal do servidor principal selecionado. Os seguintes comandos estão implementados:
-
-```
-  0 - FECHAR estacionamento
-  1 - FECHAR andar 1 
-  2 - FECHAR andar 2 
-  3 - FORÇAR abertura cancela entrada 
-  4 - FORÇAR abertura cancela saida 
-  5 - FORÇAR fechamento cancela entrada 
-  6 - FORÇAR fechamento cancela saida 
-```
-
 ## Como compilar 
 
 `make compile`
