@@ -65,19 +65,13 @@ void chama_dependente(ThreadState *ts, void *args)
     printf("I SENT ESTACIONAMENTO %d O ESTADO:\n", id_andar);
     print_estado(estado_main);
     char *req = transforma_estado_em_string(estado_main);
-    Estado* reparse = parse_string_estado(req);
-
-    printf("ESTADO DEPOIS DO PARSE:\n");
-    print_estado(reparse);
-
-    free(reparse);
 
     char res_buff[MAX_FRAME_SIZE];
 
     IF_DEBUG printf("chamando dependente no endereço: %s:%d\n", ip, porta);
     fflush(NULL);
 
-    t_error err = call_tcp_ip_port(req, ip, porta, res_buff);
+    t_error err = call_tcp_ip_port(req, sizeof(Estado), ip, porta, res_buff);
     IF_DEBUG printf("call finalizada!\n");
     fflush(NULL);
 
@@ -214,20 +208,20 @@ Estado *controla(Estado *e)
 
     IF_DEBUG log_print("[MAIN CONTROLA] enviando request pros dependentes\n", LEVEL_DEBUG);
     e->t_dep_1->args = e->t_dep_2->args = e;
-    // start_thread(e->t_dep_1);
+    start_thread(e->t_dep_1);
     start_thread(e->t_dep_2);
 
     IF_DEBUG log_print("[MAIN CONTROLA] esperando resposta do dependente 1\n", LEVEL_DEBUG);
-    // void *res_dep_1_void_p = wait_thread_response_with_deadline(e->t_dep_1, MCS_DEADLINE_RESPOSTA_DEPENDENTE);
+    void *res_dep_1_void_p = wait_thread_response_with_deadline(e->t_dep_1, MCS_DEADLINE_RESPOSTA_DEPENDENTE);
 
     IF_DEBUG log_print("[MAIN CONTROLA] esperando resposta do dependente 2\n", LEVEL_DEBUG);
     void *res_dep_2_void_p = wait_thread_response_with_deadline(e->t_dep_2, MCS_DEADLINE_RESPOSTA_DEPENDENTE);
 
-    // if (res_dep_1_void_p == NULL)
-    // {
-    //     IF_DEBUG log_print("[MAIN CONTROLA] dependente 1 não respondeu\n", LEVEL_ERROR);
-    //     exit(1);
-    // }
+    if (res_dep_1_void_p == NULL)
+    {
+        IF_DEBUG log_print("[MAIN CONTROLA] dependente 1 não respondeu\n", LEVEL_ERROR);
+        exit(1);
+    }
 
     if (res_dep_2_void_p == NULL)
     {
@@ -235,7 +229,7 @@ Estado *controla(Estado *e)
         exit(1);
     }
 
-    // Estado *res_dep_1 = (Estado *)res_dep_1_void_p;
+    Estado *res_dep_1 = (Estado *)res_dep_1_void_p;
     Estado *res_dep_2 = (Estado *)res_dep_2_void_p;
 
     IF_DEBUG log_print("[MAIN CONTROLA] respostas recebidas, combinando resultados\n", LEVEL_DEBUG);

@@ -273,6 +273,7 @@ Estado *processar_interface(Estado *e)
         {
             t=  get_time_mcs();
             e->andar_1_fechado = 1 - e->andar_1_fechado; 
+            e->andar_2_fechado = 1 - e->andar_2_fechado; 
         }
     }
 

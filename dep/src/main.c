@@ -12,7 +12,7 @@
 #include "shared/inc/comm.h"
 #include "shared/inc/errors.h"
 
-#define DEBUG 1
+#define DEBUG 0
 
 #define PERIODO_MINIMO_ENTRE_EXECUCOES 100 * MILLI
 
@@ -113,33 +113,33 @@ void handle_interruption(int sinal)
     exit(0);
 }
 
-char *handle_request_servidor_principal(void *c_request, void *IGNORE_estado_dep)
+char *handle_request_servidor_principal(void *c_request, void *estado_dep)
 {
     IF_DEBUG log_print("[DEP] handle_request_servidor_principal()", LEVEL_DEBUG);
-    IF_DEBUG printf("c_request: %p", c_request);fflush(NULL);
+    IF_DEBUG printf("c_request: %p len=%u\n", c_request, strlen(c_request));fflush(NULL);
 
     Estado *e_novo = parse_string_estado(c_request);
-    IF_DEBUG printf("e_novo: %p", e_novo);fflush(NULL);
-
+    
     IF_DEBUG log_print("[DEP] novo estado recebido do servidor principal", LEVEL_DEBUG);
 
-    Estado *e = (Estado *)c_request;
+    IF_DEBUG printf("I GOT ESTACIONAMENTO ESTADO:\n");
+    IF_DEBUG print_estado(e_novo);
 
-    printf("I GOT ESTACIONAMENTO ESTADO:\n");
-    print_estado(e);
+    Estado *e = (Estado *)estado_dep;
 
-    if (e->ator_atual != ATOR_MAIN)
+    if (e_novo->ator_atual != ATOR_MAIN)
     {
-         log_print("[DEP] IGNOREI ESTADO PORQUE ATOR NÃO É MAIN!", LEVEL_ERROR);
-         printf("[DEP] ator = %d\n", e->ator_atual);
-         log_print("[DEP] RETORNANDO ECHO DO ESTADO ATUAL!", LEVEL_ERROR);
-        fflush(NULL);
-    char *resposta = transforma_estado_em_string(e);
+        IF_DEBUG log_print("[DEP] IGNOREI ESTADO PORQUE ATOR NÃO É MAIN!", LEVEL_ERROR);
+        IF_DEBUG printf("[DEP] ator = %d\n", e_novo->ator_atual);
+        IF_DEBUG log_print("[DEP] RETORNANDO ECHO DO ESTADO ATUAL!", LEVEL_ERROR);
+        IF_DEBUG fflush(NULL);
+        char *resposta = transforma_estado_em_string(e);
         return resposta;
     }
 
-    printf("I GET ESTACIONAMENTO %d O VALOR FECHADO = %d\n", id_andar, id_andar==1? e->andar_1_fechado : e->andar_2_fechado);
-    fflush(NULL);
+    IF_DEBUG printf("I GET ESTACIONAMENTO %d O VALOR FECHADO = %d\n", id_andar, id_andar==1? e_novo->andar_1_fechado : e_novo->andar_2_fechado);
+
+    IF_DEBUG fflush(NULL);
 
     e->num_vagas_andar_1 = e_novo->num_vagas_andar_1;
 
@@ -152,6 +152,8 @@ char *handle_request_servidor_principal(void *c_request, void *IGNORE_estado_dep
     e->num_vagas_andar_2 = e_novo->num_vagas_andar_2;
 
     e->andar_2_fechado = e_novo->andar_2_fechado;
+
+    free(e_novo);
 
     IF_DEBUG log_print("[DEP] estado antigo sobrescrito", LEVEL_DEBUG);
 
@@ -182,8 +184,10 @@ void escuta_main(ThreadState *ts, void *args)
         ip = e->ip_andar_2;
     }
 
+    char* request = malloc(MAX_FRAME_SIZE);
+
     log_print("ABRINDO PORTA PRA ESCUTAR A MAIN", LEVEL_DEBUG);
-    t_error err = listen_tcp_ip_port(ip, porta, handle_request_servidor_principal, args, NULL);
+    t_error err = listen_tcp_ip_port(ip, porta, handle_request_servidor_principal, request, e);
 
     if (err)
     {
@@ -192,7 +196,9 @@ void escuta_main(ThreadState *ts, void *args)
         pthread_exit(NULL);
     }
 
-    IF_DEBUG printf("Servidor dependende rodando no endereco %s:%d\n", ip, porta);
+    IF_DEBUG printf("Fechando servidor que estava na porta %s:%d\n", ip, porta);
+
+    free(request);
 
     pthread_exit(NULL);
 }

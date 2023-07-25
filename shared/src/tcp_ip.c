@@ -17,11 +17,11 @@
 #define SHARED_TCP_IP_ERROR_LISTEN_FAILED 1005
 #define SHARED_TCP_IP_ERROR_ACCEPT_FAILED 1006
 
-#define DEBUG 1
+#define DEBUG 0
 #define IF_DEBUG if(DEBUG)
 
 // res_buff may be NULL, response will not be set
-t_error call_tcp_ip_port(char *request, char *ip, int port, char *res_buff)
+t_error call_tcp_ip_port(char *request,size_t req_size, char *ip, int port, char *res_buff)
 {
     IF_DEBUG log_print("[shared.tcp_ip] [call_tcp_ip_port] call_tcp_ip_port()\n", LEVEL_DEBUG);
     IF_DEBUG log_print("[shared.tcp_ip] [call_tcp_ip_port] ():1\n", LEVEL_DEBUG);
@@ -54,8 +54,11 @@ t_error call_tcp_ip_port(char *request, char *ip, int port, char *res_buff)
         return handle_error(SHARED_TCP_IP_ERROR_CONNECTION_FAILED, "[shared.tcp_ip] [call_tcp_ip_port] connection failed");
     }
 
+    IF_DEBUG printf("SENDING BYTES: %u\n", req_size);
+    IF_DEBUG printf("SENDING: %s\n", request);
+
     IF_DEBUG log_print("[shared.tcp_ip] [call_tcp_ip_port] ():5\n", LEVEL_DEBUG);
-    send(sock, request, strlen(request), 0);
+    send(sock, request, req_size, 0);
     IF_DEBUG log_print("[shared.tcp_ip] [call_tcp_ip_port] ():6\n", LEVEL_DEBUG);
     valread = read(sock, buffer, MAX_FRAME_SIZE);
     IF_DEBUG log_print("[shared.tcp_ip] [call_tcp_ip_port] ():7\n", LEVEL_DEBUG);
@@ -119,6 +122,11 @@ t_error listen_tcp_ip_port(char *ip, int port, char *(*get_response)(void *, voi
         valread = read(new_socket, buffer, MAX_FRAME_SIZE);
 
         IF_DEBUG log_print("[shared.tcp_ip] [listen_tcp_ip_port] valread\n", LEVEL_DEBUG);
+
+        IF_DEBUG printf("[shared.tcp_ip] [listen_tcp_ip_port] read %d bytes!\n", valread);
+        IF_DEBUG fflush(NULL);
+
+        memcpy(req, buffer, MAX_FRAME_SIZE);
 
         char *response = get_response(req, res_data);
         IF_DEBUG log_print("[shared.tcp_ip] [listen_tcp_ip_port] response created\n", LEVEL_DEBUG);

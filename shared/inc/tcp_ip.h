@@ -5,7 +5,7 @@
 
 #include "shared/inc/errors.h"
 
-t_error call_tcp_ip_port(char *request, char *ip, int port, char *res_buff);
+t_error call_tcp_ip_port(char *request, size_t req_size, char *ip, int port, char *res_buff);
 
 // get_response -> your handler, takes in a request and res_data, returns your response
 // req          -> read only. pointer to request that is received
