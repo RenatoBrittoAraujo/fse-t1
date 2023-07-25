@@ -12,6 +12,16 @@ Removi tudo que não era relevante pra entrega incial, como:
 - ambiente de dev e test
 - dockerfile e docker-compose
 
+## Descrição
+
+O sistema é composto de 3 apis.
+- API central
+- API dependente 1
+- API dependente 2
+
+Sendo a api central o código encontrado na pasta `main` e a dependente no `dep`.
+
+
 ## Requisitos cumpridos
 
 - [x] Interface (Monitoramento): como visto no gif abaixo
@@ -36,14 +46,19 @@ Removi tudo que não era relevante pra entrega incial, como:
 
 ![](figuras/Screenshot%20from%202023-07-25%2017-18-11.png)
 
-## Descrição
 
-O sistema é composto de 3 apis.
-- API central
-- API dependente 1
-- API dependente 2
 
-Sendo a api central o código encontrado na pasta `main` e a dependente no `dep`.
+eu **muito** trabalho pra implementar a interface com comandos. Mas agora funciona. É só apertar a tecla com o terminal do servidor principal selecionado. Os seguintes comandos estão implementados:
+
+```
+  0 - FECHAR estacionamento
+  1 - FECHAR andar 1 
+  2 - FECHAR andar 2 
+  3 - FORÇAR abertura cancela entrada 
+  4 - FORÇAR abertura cancela saida 
+  5 - FORÇAR fechamento cancela entrada 
+  6 - FORÇAR fechamento cancela saida 
+```
 
 ## Como compilar 
 
