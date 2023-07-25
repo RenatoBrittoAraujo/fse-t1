@@ -42,9 +42,9 @@ void chama_dependente(ThreadState *ts, void *args)
     int porta;
 
     int dependente = -1;
-    dependente = ts->thread_id == estado_main->t_dep_1->thread_id ? ATOR_DEP1 : dependente;
-    dependente = ts->thread_id == estado_main->t_dep_2->thread_id ? ATOR_DEP2 : dependente;
-
+    if (ts->thread_id == estado_main->t_dep_2->thread_id) dependente = ATOR_DEP2;
+    if (ts->thread_id == estado_main->t_dep_1->thread_id) dependente = ATOR_DEP1;
+    
     switch (dependente)
     {
     case ATOR_DEP1:
@@ -87,7 +87,6 @@ void chama_dependente(ThreadState *ts, void *args)
 
     if (err != NO_ERROR)
     {
-
         IF_DEBUG printf("[MAIN THREAD] erro %lu no listen_tcp_ip_port() do dependente\n", err);
         fflush(NULL);
         pthread_exit(NULL);
@@ -111,7 +110,6 @@ ThreadState *criar_thread_comunicar_dependente(Estado *e)
     ThreadState *t = create_thread_state(-1);
     t->response_size = sizeof(Estado);
     t->routine = chama_dependente;
-    t->args = copiar_estado(e);
 
     IF_DEBUG log_print("[MAIN] thread criada\n", LEVEL_DEBUG);
     return t;
@@ -225,7 +223,7 @@ Estado *controla(Estado *e)
 
     if (res_dep_1_void_p == NULL)
     {
-        log_print("[MAIN CONTROLA] dependente 1 não respondeu\n", LEVEL_ERROR);
+        log_print("[MAIN CONTROLA] dependente 1 não está respondendo...\n", LEVEL_ERROR);
     }
     else
     {
@@ -242,7 +240,7 @@ Estado *controla(Estado *e)
 
     if (res_dep_2_void_p == NULL)
     {
-        log_print("[MAIN CONTROLA] dependente 2 não respondeu\n", LEVEL_ERROR);
+        log_print("[MAIN CONTROLA] dependente 2 não está respondendo...\n", LEVEL_ERROR);
     }
     else
     {

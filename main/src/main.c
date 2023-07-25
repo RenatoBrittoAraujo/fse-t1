@@ -17,6 +17,9 @@ int main()
     while (1)
     {
         e = controla(e);
+        printf("\n");fflush(NULL);
         e = processar_interface(e);
+        // separa os logs de todas as iterações do loop principal
+        printf("\n\n\n\n");fflush(NULL);
     }
 }
