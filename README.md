@@ -38,10 +38,6 @@ Eeu **muito** trabalho pra implementar a interface com comandos. Mas agora funci
   6 - FORÇAR fechamento cancela saida 
 ```
 
-#### Interface (Comandos)
-
-Tentei fazer funcionar a leitura com print constante, mas tive muitos por
-
 ## Descrição
 
 O sistema é composto de 3 apis.
