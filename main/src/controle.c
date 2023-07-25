@@ -214,7 +214,7 @@ Estado *controla(Estado *e)
 
     IF_DEBUG log_print("[MAIN CONTROLA] enviando request pros dependentes\n", LEVEL_DEBUG);
     e->t_dep_1->args = e->t_dep_2->args = e;
-    start_thread(e->t_dep_1);
+    // start_thread(e->t_dep_1);
     start_thread(e->t_dep_2);
 
     IF_DEBUG log_print("[MAIN CONTROLA] esperando resposta do dependente 1\n", LEVEL_DEBUG);

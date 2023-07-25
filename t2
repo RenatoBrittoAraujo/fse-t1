@@ -1,5 +1,10 @@
+make -C main run
+make[1]: Entering directory '/home/renatoaraujo/t1/main'
+make[2]: Entering directory '/home/renatoaraujo/t1/main'
+ENV=PROD IP_ANDAR_1=127.0.0.1 PORTA_ANDAR_1=6968 IP_ANDAR_2=127.0.0.1 PORTA_ANDAR_2=6969 ./main_prod
+I SENT ESTACIONAMENTO 1 O ESTADO:
 ator_atual = 1
-tempo_ultima_execucao = 1534823966
+tempo_ultima_execucao = -2126600192
 num_andares = 2
 estacionamento_fechado = 0
 estacionamento_lotado = 0
@@ -12,27 +17,128 @@ andar_1_lotado = 0
 motor_cancela_entrada_ligado = 0
 motor_cancela_saida_ligado = 0
 sensor_de_presenca_entrada = 0
-sensor_de_subida_de_andar = 0
 sensor_de_presenca_saida = 0
-sensor_de_descida_de_andar = 0
 sensor_de_passagem_entrada = 0
-andar_2_lotado = 0
 sensor_de_passagem_saida = 0
+num_vagas_andar_2 = 0
+vagas_andar_2 = 0
+andar_2_fechado = 0
+I SENT ESTACIONAMENTO 2 O ESTADO:
+ator_atual = 1
+tempo_ultima_execucao = -2126600192
+num_andares = 2
+estacionamento_fechado = 0
+estacionamento_lotado = 0
+estacionamento_fechado = 0
+estacionamento_lotado = 0
+num_vagas_andar_1 = 8
+vagas_andar_1 = 0
+andar_1_fechado = 0
+andar_1_lotado = 0
+motor_cancela_entrada_ligado = 0
+motor_cancela_saida_ligado = 0
+sensor_de_presenca_entrada = 0
+sensor_de_presenca_saida = 0
+sensor_de_passagem_entrada = 0
+sensor_de_passagem_saida = 0
+num_vagas_andar_2 = 0
+sensor_de_subida_de_andar = 0
+vagas_andar_2 = 0
+sensor_de_descida_de_andar = 0
+andar_2_fechado = 0
+andar_2_lotado = 0
+sensor_de_subida_de_andar = 0
 porta_andar_1 = 6968
 porta_andar_2 = 6969
-num_vagas_andar_2 = 0
+sensor_de_descida_de_andar = 0
+ip_andar_1 = 127.0.0.1
+andar_2_lotado = 0
+ip_andar_2 = 127.0.0.1
+t_dep_1 = 0x1b221c8
+porta_andar_1 = 6968
+t_dep_2 = 0x1b22268
+porta_andar_2 = 6969
 ip_andar_1 = 127.0.0.1
 ip_andar_2 = 127.0.0.1
-t_dep_1 = 0x7c31c8
-t_dep_2 = 0x7c3268
+t_dep_1 = 0x1b221c8
+t_dep_2 = 0x1b22268
+[DEBUG] transforma_estado_em_string v2.0
+[DEBUG] transforma_estado_em_string v2.0
+[DEBUG] parse_string_estado v2.0
+ESTADO DEPOIS DO PARSE:
+ator_atual = 0
+tempo_ultima_execucao = 0
+num_andares = 0
+estacionamento_fechado = 0
+estacionamento_lotado = 0
+estacionamento_fechado = 0
+estacionamento_lotado = 0
+num_vagas_andar_1 = 0
+vagas_andar_1 = 0
+andar_1_fechado = 0
+andar_1_lotado = 0
+motor_cancela_entrada_ligado = 0
+motor_cancela_saida_ligado = 0
+sensor_de_presenca_entrada = 0
+sensor_de_presenca_saida = 0
+sensor_de_passagem_entrada = 0
+sensor_de_passagem_saida = 0
+num_vagas_andar_2 = 0
 vagas_andar_2 = 0
 andar_2_fechado = 0
 sensor_de_subida_de_andar = 0
 sensor_de_descida_de_andar = 0
 andar_2_lotado = 0
-porta_andar_1 = 6968
-porta_andar_2 = 6969
-ip_andar_1 = 127.0.0.1
-ip_andar_2 = 127.0.0.1
-t_dep_1 = 0x7c31c8
-t_dep_2 = 0x7c3268
+porta_andar_1 = 0
+porta_andar_2 = 0
+ip_andar_1 = (null)
+ip_andar_2 = (null)
+t_dep_1 = (nil)
+t_dep_2 = (nil)
+[DEBUG] parse_string_estado v2.0
+ESTADO DEPOIS DO PARSE:
+ator_atual = 0
+tempo_ultima_execucao = 0
+num_andares = 0
+estacionamento_fechado = 0
+estacionamento_lotado = 0
+estacionamento_fechado = 0
+estacionamento_lotado = 0
+num_vagas_andar_1 = 0
+vagas_andar_1 = 0
+andar_1_fechado = 0
+andar_1_lotado = 0
+motor_cancela_entrada_ligado = 0
+motor_cancela_saida_ligado = 0
+sensor_de_presenca_entrada = 0
+sensor_de_presenca_saida = 0
+sensor_de_passagem_entrada = 0
+sensor_de_passagem_saida = 0
+num_vagas_andar_2 = 0
+[DEBUG] vagas_andar_2 = 0
+[shared.tcp_ip] [call_tcp_ip_port] call_tcp_ip_port()
+andar_2_fechado = 0
+[DEBUG] [shared.tcp_ip] [call_tcp_ip_port] ():1
+[DEBUG] [shared.tcp_ip] [call_tcp_ip_port] ():2
+sensor_de_subida_de_andar = 0
+sensor_de_descida_de_andar = 0
+andar_2_lotado = 0
+porta_andar_1 = 0
+porta_andar_2 = 0
+ip_andar_1 = (null)
+ip_andar_2 = (null)
+t_dep_1 = (nil)
+t_dep_2 = (nil)
+[DEBUG] [shared.tcp_ip] [call_tcp_ip_port] ():3
+[DEBUG] [shared.tcp_ip] [call_tcp_ip_port] call_tcp_ip_port()
+[DEBUG] [shared.tcp_ip] [call_tcp_ip_port] ():1
+[DEBUG] [shared.tcp_ip] [call_tcp_ip_port] ():2
+[DEBUG] [DEBUG] [shared.tcp_ip] [call_tcp_ip_port] ():3
+[shared.tcp_ip] [call_tcp_ip_port] ():4
+[DEBUG] [shared.tcp_ip] [call_tcp_ip_port] ():4
+[DEBUG] [shared.tcp_ip] [call_tcp_ip_port] ():ERRO3
+[ERROR] error (code: 1002): [shared.tcp_ip] [call_tcp_ip_port] connection failed
+[DEBUG] [shared.tcp_ip] [call_tcp_ip_port] ():5
+[DEBUG] [shared.tcp_ip] [call_tcp_ip_port] ():6
+make[2]: Leaving directory '/home/renatoaraujo/t1/main'
+make[1]: Leaving directory '/home/renatoaraujo/t1/main'

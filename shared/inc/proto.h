@@ -2,6 +2,9 @@
 #define PROTO_H 1
 
 #include <stdlib.h>
+#include <stdint.h>
+#include <inttypes.h>
+#include <stdio.h>
 
 #include "shared/inc/threads.h"
 #include "shared/inc/time.h"
@@ -71,7 +74,7 @@ struct Estado
     ThreadState *t_main;
     ThreadState *t_dep_1;
     ThreadState *t_dep_2;
-};
+} __attribute__((packed));
 typedef struct Estado Estado;
 
 // ======= INTERFACE
