@@ -42,9 +42,11 @@ void chama_dependente(ThreadState *ts, void *args)
     int porta;
 
     int dependente = -1;
-    if (ts->thread_id == estado_main->t_dep_2->thread_id) dependente = ATOR_DEP2;
-    if (ts->thread_id == estado_main->t_dep_1->thread_id) dependente = ATOR_DEP1;
-    
+    if (ts->thread_id == estado_main->t_dep_2->thread_id)
+        dependente = ATOR_DEP2;
+    if (ts->thread_id == estado_main->t_dep_1->thread_id)
+        dependente = ATOR_DEP1;
+
     switch (dependente)
     {
     case ATOR_DEP1:
@@ -217,7 +219,7 @@ Estado *controla(Estado *e)
         e->nova_presenca_entrada = 0;
     }
 
-        if (e->sensor_de_presenca_saida > e->sensor_de_passagem_saida)
+    if (e->sensor_de_presenca_saida > e->sensor_de_passagem_saida)
     {
         e->nova_presenca_saida = 1;
     }
@@ -227,8 +229,8 @@ Estado *controla(Estado *e)
         {
             // carro saiu do estacionamento
             e->timestamp_last_saida = get_time_mcs();
-            e->id_last_saida = 
-            e->saida_pendente = 1;
+            e->id_last_saida =
+                e->saida_pendente = 1;
         }
         e->nova_presenca_saida = 0;
     }
@@ -237,19 +239,27 @@ Estado *controla(Estado *e)
 
     int num_vagas_last = 0, num_vagas_now = 0;
 
-    for (int i =0; i < 8; i++) if (e->vagas_andar_1 & (1<<i)) num_vagas_now++;
-    for (int i =0; i < 8; i++) if (e->vagas_andar_2 & (1<<i)) num_vagas_now++;
-    for (int i =0; i < 8; i++) if (e->last_vagas_andar_1 & (1<<i)) num_vagas_last++;
-    for (int i =0; i < 8; i++) if (e->last_vagas_andar_2 & (1<<i)) num_vagas_last++;
+    for (int i = 0; i < 8; i++)
+        if (e->vagas_andar_1 & (1 << i))
+            num_vagas_now++;
+    for (int i = 0; i < 8; i++)
+        if (e->vagas_andar_2 & (1 << i))
+            num_vagas_now++;
+    for (int i = 0; i < 8; i++)
+        if (e->last_vagas_andar_1 & (1 << i))
+            num_vagas_last++;
+    for (int i = 0; i < 8; i++)
+        if (e->last_vagas_andar_2 & (1 << i))
+            num_vagas_last++;
 
     printf("NUM VAGAS LAST = %d  |  NUM_VAGAS_NOW = %d\n", num_vagas_last, num_vagas_now);
     printf("ENTRADA PENDENTE = %d  |  SAIDA PENDENTE = %d\n", e->entrada_pendente, e->saida_pendente);
 
-    if (num_vagas_last - num_vagas_now == -1  )
-    printf("VAGA FOR OCUPADA\n");
+    if (num_vagas_last - num_vagas_now == -1)
+        printf("VAGA FOR OCUPADA\n");
 
     if (num_vagas_last - num_vagas_now == 1)
-    printf("VAGA FOI DESOCUPADA\n");
+        printf("VAGA FOI DESOCUPADA\n");
     fflush(NULL);
 
     if (e->entrada_pendente && num_vagas_last + 1 == num_vagas_now)
@@ -257,19 +267,22 @@ Estado *controla(Estado *e)
         int vaga_i;
         int andar;
 
-        for (int i =0; i <8; i++) if (e->vagas_andar_1 & (1<<i) != e->last_vagas_andar_1 & (1<<i))
-        {
-            vaga_i = i;
-            andar =1;
-        }
+        for (int i = 0; i < 8; i++)
+            if (e->vagas_andar_1 & (1 << i) != e->last_vagas_andar_1 & (1 << i))
+            {
+                vaga_i = i;
+                andar = 1;
+            }
 
-                for (int i =0; i <8; i++) if (e->vagas_andar_2 & (1<<i) != e->last_vagas_andar_2 & (1<<i))
-        {
-            vaga_i = i;
-            andar =2;
-        }
+        for (int i = 0; i < 8; i++)
+            if (e->vagas_andar_2 & (1 << i) != e->last_vagas_andar_2 & (1 << i))
+            {
+                vaga_i = i;
+                andar = 2;
+            }
 
-        if (andar == 2) vaga_i += 8;
+        if (andar == 2)
+            vaga_i += 8;
 
         if (e->id_vagas[vaga_i] != -1)
         {
@@ -292,19 +305,22 @@ Estado *controla(Estado *e)
         int vaga_i;
         int andar;
 
-        for (int i =0; i <8; i++) if (e->vagas_andar_1 & (1<<i) != e->last_vagas_andar_1 & (1<<i))
-        {
-            vaga_i = i;
-            andar =1;
-        }
+        for (int i = 0; i < 8; i++)
+            if (e->vagas_andar_1 & (1 << i) != e->last_vagas_andar_1 & (1 << i))
+            {
+                vaga_i = i;
+                andar = 1;
+            }
 
-                for (int i =0; i <8; i++) if (e->vagas_andar_2 & (1<<i) != e->last_vagas_andar_2 & (1<<i))
-        {
-            vaga_i = i;
-            andar =2;
-        }
+        for (int i = 0; i < 8; i++)
+            if (e->vagas_andar_2 & (1 << i) != e->last_vagas_andar_2 & (1 << i))
+            {
+                vaga_i = i;
+                andar = 2;
+            }
 
-        if (andar == 2) vaga_i += 8;
+        if (andar == 2)
+            vaga_i += 8;
         e->last_saida_i = vaga_i;
     }
 
@@ -313,8 +329,9 @@ Estado *controla(Estado *e)
         if (e->last_saida_i == -1)
         {
             log_print("[MAIN] vaga de saida nao pode ser detectada!", LEVEL_ERROR);
-
-        } else {
+        }
+        else
+        {
             int vaga_i = e->last_saida_i;
             if (e->id_vagas[vaga_i] == -1)
             {
@@ -322,10 +339,10 @@ Estado *controla(Estado *e)
             }
 
             int id = e->id_vagas[vaga_i];
-            e->saiu_da_vaga=vaga_i;
+            e->saiu_da_vaga = vaga_i;
             e->id_vagas[vaga_i] = -1;
-            int tempo_segundos = (get_time_mcs() - e->entrada_time[vaga_i])/1e6;
-            int preco = tempo_segundos*e->preco_por_segundo;
+            int tempo_segundos = (get_time_mcs() - e->entrada_time[vaga_i]) / 1e6;
+            int preco = tempo_segundos * e->preco_por_segundo;
             e->preco_pago_last_carro = preco;
         }
 
@@ -370,7 +387,6 @@ Estado *controla(Estado *e)
         IF_DEBUG log_print("[MAIN CONTROLA] combinando estado servidor dependente 1\n", LEVEL_DEBUG);
         Estado *res_dep_1 = (Estado *)res_dep_1_void_p;
 
-
         e->andar_1_lotado = res_dep_1->andar_1_lotado;
         e->vagas_andar_1 = res_dep_1->vagas_andar_1;
         e->sensor_de_presenca_entrada = res_dep_1->sensor_de_presenca_entrada;
@@ -398,7 +414,7 @@ Estado *controla(Estado *e)
     IF_DEBUG log_print("[MAIN CONTROLA] resultados combinados, novo estado gerado\n", LEVEL_DEBUG);
 
     // ========= FIM
-    unsigned long wait_time  =MCS_PERIODO_MINIMO_EXEC - get_time_mcs() + e->tempo_ultima_execucao;
+    unsigned long wait_time = MCS_PERIODO_MINIMO_EXEC - get_time_mcs() + e->tempo_ultima_execucao;
 
     if (MCS_PERIODO_MINIMO_EXEC > get_time_mcs() - e->tempo_ultima_execucao)
     {

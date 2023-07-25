@@ -142,16 +142,15 @@ void desenha_interface(Estado *e)
     printf("        id_last_entrada:            %lu  \n", e->id_last_entrada);
     printf("        id_last_saida:              %lu  \n", e->id_last_saida);
 
-
-    if (e->estacionou_na_vaga !=-1||1)
+    if (e->estacionou_na_vaga != -1 || 1)
     {
 
-    printf("      ULTIMO CARRO ESTACIONOU NA VAGA %d DO %d ANDAR  \n", e->estacionou_na_vaga%8, e->estacionou_na_vaga /8 + 1);
+        printf("      ULTIMO CARRO ESTACIONOU NA VAGA %d DO %d ANDAR  \n", e->estacionou_na_vaga % 8, e->estacionou_na_vaga / 8 + 1);
     }
-    if (e->saiu_da_vaga !=-1||1)
-{
-    printf("      ULTIMO CARRO SAIU NA VAGA %d DO %d ANDAR  \n", e->saiu_da_vaga%8, e->saiu_da_vaga /8 + 1);
-}
+    if (e->saiu_da_vaga != -1 || 1)
+    {
+        printf("      ULTIMO CARRO SAIU NA VAGA %d DO %d ANDAR  \n", e->saiu_da_vaga % 8, e->saiu_da_vaga / 8 + 1);
+    }
     for (int id_andar = 1; id_andar <= e->num_andares; id_andar++)
     {
         printf("|---------------------- andar %d ------------------------|\n", id_andar);

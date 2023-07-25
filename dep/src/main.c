@@ -16,7 +16,7 @@
 
 #define PERIODO_MINIMO_ENTRE_EXECUCOES 100 * MILLI
 
-#define TEMPO_MINIMO_CANCELA_ABERTA 2 * SECOND * MILLI
+#define TEMPO_MINIMO_CANCELA_ABERTA 2 * SECOND *MILLI
 
 // ========== COMEÇA CONFIG DE PINOS =============
 #define RASP_ESTACIONAMENTO_1_3 1
@@ -118,10 +118,11 @@ void handle_interruption(int sinal)
 char *handle_request_servidor_principal(void *c_request, void *estado_dep, int *res_size)
 {
     IF_DEBUG log_print("[DEP] handle_request_servidor_principal()", LEVEL_DEBUG);
-    IF_DEBUG printf("c_request: %p len=%u\n", c_request, strlen(c_request));fflush(NULL);
+    IF_DEBUG printf("c_request: %p len=%u\n", c_request, strlen(c_request));
+    fflush(NULL);
 
     Estado *e_novo = parse_string_estado(c_request);
-    
+
     IF_DEBUG log_print("[DEP] novo estado recebido do servidor principal", LEVEL_DEBUG);
 
     IF_DEBUG printf("I GOT ESTACIONAMENTO ESTADO:\n");
@@ -184,7 +185,7 @@ void escuta_main(ThreadState *ts, void *args)
         ip = e->ip_andar_2;
     }
 
-    char* request = malloc(MAX_FRAME_SIZE);
+    char *request = malloc(MAX_FRAME_SIZE);
 
     log_print("ABRINDO PORTA PRA ESCUTAR A MAIN", LEVEL_DEBUG);
     t_error err = listen_tcp_ip_port(ip, porta, handle_request_servidor_principal, request, e);
@@ -247,12 +248,12 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
 
     int new_vagas = 0;
 
-     printf("\n========= SERVIDOR DEPENDENTE %d (%s) ===========\n", id_andar, id_andar==1?"entrada":"piso superior");
+    printf("\n========= SERVIDOR DEPENDENTE %d (%s) ===========\n", id_andar, id_andar == 1 ? "entrada" : "piso superior");
     printf("timestamp: | %lu\n", get_time_mcs());
-     printf("          | -------------------------------  \n");
-     printf("vagas:    |  1 | 2 | 3 | 4 | 5 | 6 | 7 | 8   \n");
-     printf("          | -------------------------------  \n");
-     printf("ocupacao: | ");
+    printf("          | -------------------------------  \n");
+    printf("vagas:    |  1 | 2 | 3 | 4 | 5 | 6 | 7 | 8   \n");
+    printf("          | -------------------------------  \n");
+    printf("ocupacao: | ");
 
     // Itera por todas as vagas
     for (int i = 0; i < 8; i++)
@@ -270,7 +271,7 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         bcm2835_gpio_write(end3, vend3);
 
         fflush(NULL);
-        wait_micro(10*MILLI);
+        wait_micro(10 * MILLI);
 
         int readv;
         if (id_andar == 1)
@@ -280,15 +281,15 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         else
         {
             readv = bcm2835_gpio_lev(INP_A2_SENSOR_VAGA);
-            
         }
         int ocupado = readv > LOW;
         if (ocupado)
         {
             new_vagas = new_vagas | (1 << i);
         }
-         printf(" %d", ocupado);
-        if (i < 7)printf(" |");
+        printf(" %d", ocupado);
+        if (i < 7)
+            printf(" |");
     }
 
     printf("\n--------- | newvagas: %d ------------------------------- \n", new_vagas);
@@ -308,20 +309,20 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         lotado = e->andar_2_lotado = 0x00FF == new_vagas;
     }
 
-    printf("lotado:   | %s (%d)    \n", lotado ? "está lotado":"não está lotado" ,lotado);
-    printf("fechado:  | %s (%d)   \n",fechado ? "está fechado":"não está fechado", fechado);
+    printf("lotado:   | %s (%d)    \n", lotado ? "está lotado" : "não está lotado", lotado);
+    printf("fechado:  | %s (%d)   \n", fechado ? "está fechado" : "não está fechado", fechado);
 
-        int sinal_ligado = e->estacionamento_fechado || e->estacionamento_lotado;
-        if (id_andar == 1)
-        {
-            sinal_ligado = sinal_ligado || e->andar_1_fechado || e->andar_1_lotado;
-            bcm2835_gpio_write(OUT_A1_SINAL_DE_LOTADO_FECHADO, sinal_ligado);
-        }
-        else
-        {
-            sinal_ligado = sinal_ligado || e->andar_2_fechado || e->andar_2_lotado;
-            bcm2835_gpio_write(OUT_A2_SINAL_DE_LOTADO_FECHADO, sinal_ligado);
-        }
+    int sinal_ligado = e->estacionamento_fechado || e->estacionamento_lotado;
+    if (id_andar == 1)
+    {
+        sinal_ligado = sinal_ligado || e->andar_1_fechado || e->andar_1_lotado;
+        bcm2835_gpio_write(OUT_A1_SINAL_DE_LOTADO_FECHADO, sinal_ligado);
+    }
+    else
+    {
+        sinal_ligado = sinal_ligado || e->andar_2_fechado || e->andar_2_lotado;
+        bcm2835_gpio_write(OUT_A2_SINAL_DE_LOTADO_FECHADO, sinal_ligado);
+    }
 
     // entrada
     if (id_andar == 1)
@@ -343,28 +344,30 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
             e->sensor_de_passagem_saida = get_time_mcs();
 
         int now = get_time_mcs();
-        
-        if (now - e->sensor_de_presenca_entrada < TEMPO_MINIMO_CANCELA_ABERTA || 
-        now - e->sensor_de_passagem_entrada < TEMPO_MINIMO_CANCELA_ABERTA)
+
+        if (now - e->sensor_de_presenca_entrada < TEMPO_MINIMO_CANCELA_ABERTA ||
+            now - e->sensor_de_passagem_entrada < TEMPO_MINIMO_CANCELA_ABERTA)
         {
             e->motor_cancela_entrada_ligado = 1;
         }
-        else{
+        else
+        {
             e->motor_cancela_entrada_ligado = 0;
         }
 
-        if (now - e->sensor_de_presenca_saida < TEMPO_MINIMO_CANCELA_ABERTA || 
-        now - e->sensor_de_passagem_saida < TEMPO_MINIMO_CANCELA_ABERTA)
+        if (now - e->sensor_de_presenca_saida < TEMPO_MINIMO_CANCELA_ABERTA ||
+            now - e->sensor_de_passagem_saida < TEMPO_MINIMO_CANCELA_ABERTA)
         {
             e->motor_cancela_saida_ligado = 1;
         }
-        else{
+        else
+        {
             e->motor_cancela_saida_ligado = 0;
         }
 
         bcm2835_gpio_write(OUT_A1_MOTOR_CANCELA_ENTRADA, e->motor_cancela_entrada_ligado);
 
-        bcm2835_gpio_write(OUT_A1_MOTOR_CANCELA_SAIDA, e->motor_cancela_saida_ligado); 
+        bcm2835_gpio_write(OUT_A1_MOTOR_CANCELA_SAIDA, e->motor_cancela_saida_ligado);
 
         printf("motor_cancela_entrada:      | %s (%d) \n", e->motor_cancela_entrada_ligado ? "abrindo" : "fechando", e->motor_cancela_entrada_ligado);
         printf("motor_cancela_saida:        | %s (%d)   \n", e->motor_cancela_saida_ligado ? "abrindo" : "fechando", e->motor_cancela_saida_ligado);
@@ -391,11 +394,9 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         printf("sensor_de_descida_de_andar: | %lu  \n", e->motor_cancela_saida_ligado);
     }
 
-
-
     e->tempo_ultima_execucao = get_time_mcs();
     e->ator_atual = id_andar == 1 ? ATOR_DEP1 : ATOR_DEP2;
-        fflush(NULL);
+    fflush(NULL);
 
     return e;
 }
@@ -450,7 +451,7 @@ int main()
         IF_DEBUG printf("rodando em %s:%d\n", ip, porta);
         e = le_aplica_estado(e, id_andar);
 
-        unsigned long wait_mcs  = PERIODO_MINIMO_ENTRE_EXECUCOES - get_time_mcs() + last_exec;
+        unsigned long wait_mcs = PERIODO_MINIMO_ENTRE_EXECUCOES - get_time_mcs() + last_exec;
 
         if (PERIODO_MINIMO_ENTRE_EXECUCOES > get_time_mcs() - last_exec)
             wait_micro(wait_mcs);
