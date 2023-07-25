@@ -38,6 +38,8 @@ Eeu **muito** trabalho pra implementar a interface com comandos. Mas agora funci
   6 - FORÇAR fechamento cancela saida 
 ```
 
+![](figuras/Screenshot%20from%202023-07-25%2017-18-11.png)
+
 ## Descrição
 
 O sistema é composto de 3 apis.
