@@ -234,11 +234,6 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         bcm2835_gpio_write(end2, vend2);
         bcm2835_gpio_write(end3, vend3);
 
-        // IF_DEBUG printf("%d %d %d\n",
-        //        bcm2835_gpio_lev(end3),
-        //        bcm2835_gpio_lev(end2),
-        //        bcm2835_gpio_lev(end1));
-
         fflush(NULL);
         wait_micro(5000);
 
