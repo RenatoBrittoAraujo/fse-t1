@@ -14,7 +14,7 @@
 
 #define DEBUG 0
 
-#define PERIODO_MINIMO_ENTRE_EXECUCOES 100 * MILLI
+#define PERIODO_MINIMO_ENTRE_EXECUCOES 300 * MILLI
 
 // ========== COMEÇA CONFIG DE PINOS =============
 #define RASP_ESTACIONAMENTO_1_3 1
@@ -356,7 +356,6 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
 int main()
 {
     set_level(LEVEL_DEBUG);
-    set_time_wait_ignore(0);
 
     IF_DEBUG log_print("[DEP MAIN] incializando\n", LEVEL_INFO);
 
@@ -403,13 +402,14 @@ int main()
         IF_DEBUG printf("rodando em %s:%d\n", ip, porta);
         e = le_aplica_estado(e, id_andar);
 
-        if (is_newer(PERIODO_MINIMO_ENTRE_EXECUCOES + last_exec))
-        {
-            time_t wait_time = PERIODO_MINIMO_ENTRE_EXECUCOES + last_exec - get_time_mcs();
-            IF_DEBUG printf("Waiting %lu ms\n", wait_time);
-            wait_micro(wait_time);
-        }
-        last_exec = get_time_mcs();
-        // IF_DEBUG printf("\e[1;1H\e[2J");
+        time_t agora = -get_time_mcs();
+        time_t dt = agora - last_exec ;
+        time_t aguarda = PERIODO_MINIMO_ENTRE_EXECUCOES - dt;
+        if (aguarda < 0) aguarda = -aguarda;
+
+        if (dt < PERIODO_MINIMO_ENTRE_EXECUCOES)
+            wait_micro(aguarda);
+
+        last_exec = -get_time_mcs();
     }
 }

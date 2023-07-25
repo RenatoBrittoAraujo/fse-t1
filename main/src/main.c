@@ -11,7 +11,6 @@
 int main()
 {
     set_level(LEVEL_DEBUG);
-    set_time_wait_ignore(0);
 
     Estado *e = NULL;
     while (1)

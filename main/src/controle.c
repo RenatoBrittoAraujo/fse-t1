@@ -174,6 +174,8 @@ int decidir_estado_motor_cancela_saida(Estado *e)
 
 Estado *controla(Estado *e)
 {
+    // ========= INICIALIZA ITERAÇÃO DE CONTROLE
+
     IF_DEBUG log_print("[MAIN] controla()\n", LEVEL_DEBUG);
 
     if (is_nova_conexao(e))
@@ -184,7 +186,6 @@ Estado *controla(Estado *e)
         e->t_dep_1 = criar_thread_comunicar_dependente(e);
         e->t_dep_2 = criar_thread_comunicar_dependente(e);
     }
-    e->tempo_ultima_execucao = get_time_mcs();
 
     // ========= CANCELAS
 
@@ -195,6 +196,44 @@ Estado *controla(Estado *e)
     e->motor_cancela_saida_ligado = get_estado_motor_cancela(
         e->sensor_de_presenca_saida,
         e->sensor_de_passagem_saida);
+
+    if (e->sensor_de_presenca_entrada > e->sensor_de_passagem_entrada)
+    {
+        e->nova_presenca_entrada = 1;
+    }
+    else
+    {
+        if (e->nova_presenca_entrada == 1)
+        {
+            // novo carro entrou no estacionamento
+
+            // salva id do carro
+            // salva horario entrada carro
+            // salva que sistema esta esperando nova vaga ser ocupada
+        }
+        e->nova_presenca_entrada = 0;
+    }
+
+        if (e->sensor_de_presenca_saida > e->sensor_de_passagem_saida)
+    {
+        e->nova_presenca_saida = 1;
+    }
+    else
+    {
+        if (e->nova_presenca_saida == 1)
+        {
+            // carro saiu do estacionamento
+
+            // encontra id do carro
+            // calcula preço
+        }
+        e->nova_presenca_saida = 0;
+    }
+
+    if (e->timestamp_ultimo_carro > e->tempo_ultima_execucao)
+    {
+
+    }
 
     // ========= VAGAS
 
@@ -209,6 +248,10 @@ Estado *controla(Estado *e)
         todos_andares_lotados *= andar_lotado;
     }
     e->estacionamento_lotado = is_todas_as_vagas_ocupadas(e);
+
+    // ======== COMUNICAÇÃO
+
+    e->tempo_ultima_execucao = get_time_mcs();
 
     IF_DEBUG log_print("[MAIN CONTROLA] enviando request pros dependentes\n", LEVEL_DEBUG);
     e->t_dep_1->args = e->t_dep_2->args = e;
@@ -256,7 +299,7 @@ Estado *controla(Estado *e)
 
     IF_DEBUG log_print("[MAIN CONTROLA] resultados combinados, novo estado gerado\n", LEVEL_DEBUG);
 
-    // ========= FIM
+    // ========= FINALIZA DA ITERAÇÃO DE CONTROLE
 
     time_t esperar_proximo = get_time_mcs() - e->tempo_ultima_execucao - MCS_PERIODO_MINIMO_EXEC;
 
