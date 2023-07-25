@@ -257,13 +257,13 @@ Estado *controla(Estado *e)
         int vaga_i;
         int andar;
 
-        for (int i =0; i <8; i++) if (e->vagas_andar_1 && (1<<i) != e->last_vagas_andar_1 && (1<<i))
+        for (int i =0; i <8; i++) if (e->vagas_andar_1 & (1<<i) != e->last_vagas_andar_1 & (1<<i))
         {
             vaga_i = i;
             andar =1;
         }
 
-                for (int i =0; i <8; i++) if (e->vagas_andar_2 && (1<<i) != e->last_vagas_andar_2 && (1<<i))
+                for (int i =0; i <8; i++) if (e->vagas_andar_2 & (1<<i) != e->last_vagas_andar_2 & (1<<i))
         {
             vaga_i = i;
             andar =2;
@@ -275,6 +275,8 @@ Estado *controla(Estado *e)
         {
             log_print("[MAIN] vaga de estacionamento estava ocupada!", LEVEL_ERROR);
         }
+
+        printf("VAGA_I = %d\n", vaga_i);
 
         e->last_entrada_i = vaga_i;
 
@@ -290,13 +292,13 @@ Estado *controla(Estado *e)
         int vaga_i;
         int andar;
 
-        for (int i =0; i <8; i++) if (e->vagas_andar_1 && (1<<i) != e->last_vagas_andar_1 && (1<<i))
+        for (int i =0; i <8; i++) if (e->vagas_andar_1 & (1<<i) != e->last_vagas_andar_1 & (1<<i))
         {
             vaga_i = i;
             andar =1;
         }
 
-                for (int i =0; i <8; i++) if (e->vagas_andar_2 && (1<<i) != e->last_vagas_andar_2 && (1<<i))
+                for (int i =0; i <8; i++) if (e->vagas_andar_2 & (1<<i) != e->last_vagas_andar_2 & (1<<i))
         {
             vaga_i = i;
             andar =2;
