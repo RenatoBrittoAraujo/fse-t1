@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+
 #include "shared/inc/time.h"
 
 int IGNORE_TIME_WAIT = 0;
@@ -12,7 +15,6 @@ time_mcs get_time_mcs()
     struct timeval tv;
     gettimeofday(&tv, NULL);
     unsigned long time_in_micros = 1000000 * tv.tv_sec + tv.tv_usec;
-
     return time_in_micros;
 }
 

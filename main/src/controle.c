@@ -139,7 +139,7 @@ int is_sensor_de_presenca_na_saida_ocupado(Estado *e)
     e->motor_cancela_saida_ligado = 0;
 }
 
-int get_estado_motor_cancela(time_t sensor_de_presenca, time_t sensor_de_passagem)
+int get_estado_motor_cancela(unsigned long sensor_de_presenca, unsigned long sensor_de_passagem)
 {
     IF_DEBUG log_print("[MAIN] get_estado_motor_cancela()\n", LEVEL_DEBUG);
 
@@ -268,6 +268,7 @@ Estado *controla(Estado *e)
         IF_DEBUG log_print("[MAIN CONTROLA] combinando estado servidor dependente 1\n", LEVEL_DEBUG);
         Estado *res_dep_1 = (Estado *)res_dep_1_void_p;
 
+
         e->andar_1_lotado = res_dep_1->andar_1_lotado;
         e->vagas_andar_1 = res_dep_1->vagas_andar_1;
         e->sensor_de_presenca_entrada = res_dep_1->sensor_de_presenca_entrada;
@@ -295,13 +296,12 @@ Estado *controla(Estado *e)
     IF_DEBUG log_print("[MAIN CONTROLA] resultados combinados, novo estado gerado\n", LEVEL_DEBUG);
 
     // ========= FIM
+    unsigned long wait_time  =MCS_PERIODO_MINIMO_EXEC - get_time_mcs() + e->tempo_ultima_execucao;
 
-    time_t esperar_proximo = get_time_mcs() - e->tempo_ultima_execucao - MCS_PERIODO_MINIMO_EXEC;
-
-    if (esperar_proximo > 0)
+    if (MCS_PERIODO_MINIMO_EXEC > get_time_mcs() - e->tempo_ultima_execucao)
     {
         IF_DEBUG log_print("[MAIN CONTROLA] wait_micro()\n", LEVEL_DEBUG);
-        wait_micro(esperar_proximo);
+        wait_micro(wait_time);
     }
 
     IF_DEBUG log_print("[MAIN CONTROLA] fim\n", LEVEL_DEBUG);

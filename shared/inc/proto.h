@@ -72,10 +72,10 @@ struct Estado
     // ---------- saidas do andar 1
     int andar_1_lotado;
     int vagas_andar_1;
-    time_t sensor_de_presenca_entrada;
-    time_t sensor_de_presenca_saida;
-    time_t sensor_de_passagem_entrada;
-    time_t sensor_de_passagem_saida;
+    unsigned long sensor_de_presenca_entrada;
+    unsigned long sensor_de_presenca_saida;
+    unsigned long sensor_de_passagem_entrada;
+    unsigned long sensor_de_passagem_saida;
 
     // ---------- saidas para andar 2
     int num_vagas_andar_2;
@@ -84,18 +84,8 @@ struct Estado
     // ---------- entradas do andar 2
     int andar_2_lotado;
     int vagas_andar_2;
-    time_t sensor_de_subida_de_andar;
-    time_t sensor_de_descida_de_andar;
-
-    // comum
-    int porta_andar_1;
-    int porta_andar_2;
-    char *ip_andar_1;
-    char *ip_andar_2;
-
-    ThreadState *t_main;
-    ThreadState *t_dep_1;
-    ThreadState *t_dep_2;
+    unsigned long sensor_de_subida_de_andar;
+    unsigned long sensor_de_descida_de_andar;
 } __attribute__((packed));
 typedef struct Estado Estado;
 

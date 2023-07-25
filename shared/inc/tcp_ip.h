@@ -19,6 +19,6 @@ t_error call_tcp_ip_port(char *request, size_t req_size, char *ip, int port, cha
 // req          -> read only. pointer to request that is received
 // res_data     -> write only. pointer to data that will be used to generate response.
 //                 may be null. you can pass anything for your get_response function to use.
-t_error listen_tcp_ip_port(char *ip, int port, char *(*get_response)(void *, void *), void *req, void *res_data);
+t_error listen_tcp_ip_port(char *ip, int port, char *(*get_response)(void *, void *, int *), void *req, void *res_data);
 
 #endif

@@ -113,7 +113,7 @@ void handle_interruption(int sinal)
     exit(0);
 }
 
-char *handle_request_servidor_principal(void *c_request, void *estado_dep)
+char *handle_request_servidor_principal(void *c_request, void *estado_dep, int *res_size)
 {
     IF_DEBUG log_print("[DEP] handle_request_servidor_principal()", LEVEL_DEBUG);
     IF_DEBUG printf("c_request: %p len=%u\n", c_request, strlen(c_request));fflush(NULL);
@@ -158,6 +158,11 @@ char *handle_request_servidor_principal(void *c_request, void *estado_dep)
     IF_DEBUG log_print("[DEP] estado antigo sobrescrito", LEVEL_DEBUG);
 
     char *resposta = transforma_estado_em_string(e);
+
+    printf("enviando resposta com vagas = %d\n", e->vagas_andar_1);
+    fflush(NULL);
+
+    *res_size = sizeof(Estado);
 
     return resposta;
 }
@@ -214,7 +219,7 @@ ThreadState *cria_thread_listen(Estado *e)
     return t;
 }
 
-int atualiza_tempo(time_t *attr, int atualizar)
+int atualiza_tempo(unsigned long *attr, int atualizar)
 {
     // IF_DEBUG log_print("[DEP] atualiza_tempo\n", LEVEL_DEBUG);
     if (atualizar)
@@ -262,7 +267,7 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         if ((1 << 1) & i)
             vend2 = HIGH;
         if ((1 << 2) & i)
-            vend3 = HIGH
+            vend3 = HIGH;
 
         bcm2835_gpio_write(end1, vend1);
         bcm2835_gpio_write(end2, vend2);
@@ -290,7 +295,7 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         if (i < 7)printf(" |");
     }
 
-    printf("\n--------- | ------------------------------- \n");
+    printf("\n--------- | newvagas: %d ------------------------------- \n", new_vagas);
 
     int lotado, fechado;
     if (id_andar == 1)
@@ -408,7 +413,7 @@ int main()
     ThreadState *t = cria_thread_listen(e);
     IF_DEBUG log_print("[DEP MAIN] servidor dependente rodando\n", LEVEL_DEBUG);
 
-    time_t last_exec = 0;
+    unsigned long last_exec = 0;
     char *ip;
     int porta;
     if (id_andar == 1)
@@ -429,13 +434,10 @@ int main()
         IF_DEBUG printf("rodando em %s:%d\n", ip, porta);
         e = le_aplica_estado(e, id_andar);
 
-        time_t agora = get_time_mcs();
-        time_t dt = agora - last_exec ;
-        time_t aguarda = PERIODO_MINIMO_ENTRE_EXECUCOES - dt;
-        if (aguarda < 0) aguarda = -aguarda;
+        unsigned long wait_mcs  = PERIODO_MINIMO_ENTRE_EXECUCOES - get_time_mcs()+ last_exec;
 
-        if (dt < PERIODO_MINIMO_ENTRE_EXECUCOES)
-            wait_micro(aguarda);
+        if (PERIODO_MINIMO_ENTRE_EXECUCOES > get_time_mcs() - last_exec)
+            wait_micro(wait_mcs);
 
         last_exec = get_time_mcs();
     }

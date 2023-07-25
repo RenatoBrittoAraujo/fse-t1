@@ -65,7 +65,7 @@ t_error call_tcp_ip_port(char *request,size_t req_size, char *ip, int port, char
     return NO_ERROR;
 }
 
-t_error listen_tcp_ip_port(char *ip, int port, char *(*get_response)(void *, void *), void *req, void *res_data)
+t_error listen_tcp_ip_port(char *ip, int port, char *(*get_response)(void *, void *, int *), void *req, void *res_data)
 {
     IF_DEBUG log_print("[shared.tcp_ip] [listen_tcp_ip_port] listen_tcp_ip_port\n", LEVEL_DEBUG);
 
@@ -119,11 +119,12 @@ t_error listen_tcp_ip_port(char *ip, int port, char *(*get_response)(void *, voi
         IF_DEBUG fflush(NULL);
 
         memcpy(req, buffer, MAX_FRAME_SIZE);
+        int res_size = 0;
+        char *response = get_response(req, res_data, &res_size);
 
-        char *response = get_response(req, res_data);
         IF_DEBUG log_print("[shared.tcp_ip] [listen_tcp_ip_port] response created\n", LEVEL_DEBUG);
 
-        send(new_socket, &response, strlen(response), 0);
+        send(new_socket, response, res_size, 0);
         IF_DEBUG log_print("[shared.tcp_ip] [listen_tcp_ip_port] response sent\n", LEVEL_DEBUG);
 
         free(response);
