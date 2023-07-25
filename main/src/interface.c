@@ -130,17 +130,15 @@ void get_inp_char(ThreadState *ts, void *args)
 void desenha_interface(Estado *e)
 {
     // ====== DISPLAY
-    printf("                     TIMETAMP = %lu                  \n", get_time_mcs());
     printf("|------------ GERENCIADOR DE ESTACIONAMENTO ------------|\n");
-
-    printf("|                numero de andares: %d                   |\n", e->num_andares);
-
-    printf("| sensor_deteccao_entrada: %ld   sensor_deteccao_saida: %ld |\n", e->sensor_de_presenca_entrada, e->sensor_de_presenca_saida);
-
-    printf("| sensor_passagem_entrada: %ld   sensor_passagem_saida: %ld |\n", e->sensor_de_presenca_entrada, e->sensor_de_presenca_saida);
-    fflush(NULL);
-
-    printf("| sensor_de_subida: %d              sensor_de_descida: %d |\n", e->sensor_de_subida_de_andar, e->sensor_de_descida_de_andar);
+    printf("        timestamp (microsegundos): %lu                  \n", get_time_mcs());
+    printf("        numero de andares: %d                   \n", e->num_andares);
+    printf("        sensor_abertura_entrada:    %lu    \n", e->sensor_de_presenca_entrada);
+    printf("        sensor_fechamento_entrada:  %lu \n", e->sensor_de_passagem_entrada);
+    printf("        sensor_abertura_saida:      %lu     \n", e->sensor_de_presenca_saida);
+    printf("        sensor_fechamento_saida:    %lu   \n", e->sensor_de_passagem_saida);
+    printf("        sensor_de_subida:           %lu   \n", e->sensor_de_subida_de_andar);
+    printf("        sensor_de_descida:          %lu  \n", e->sensor_de_descida_de_andar);
 
     for (int id_andar = 1; id_andar <= e->num_andares; id_andar++)
     {
@@ -266,16 +264,16 @@ Estado *processar_interface(Estado *e)
     //     e = ler_comando(e);
     // }1
 
-    if (t == 0) t= get_time_mcs();
-    else
-    {
-        if (t + 2*SECOND*MILLI<get_time_mcs())
-        {
-            t=  get_time_mcs();
-            e->andar_1_fechado = 1 - e->andar_1_fechado; 
-            e->andar_2_fechado = 1 - e->andar_2_fechado; 
-        }
-    }
+    // if (t == 0) t= get_time_mcs();
+    // else
+    // {
+    //     if (t + 2*SECOND*MILLI<get_time_mcs())
+    //     {
+    //         t=  get_time_mcs();
+    //         e->andar_1_fechado = 1 - e->andar_1_fechado; 
+    //         e->andar_2_fechado = 1 - e->andar_2_fechado; 
+    //     }
+    // }
 
     return e;
 }
