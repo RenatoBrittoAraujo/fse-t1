@@ -12,8 +12,7 @@
 #include "shared/inc/comm.h"
 #include "shared/inc/errors.h"
 
-#define DEBUG 1
-#define IF_DEBUG if(DEBUG)
+#define DEBUG 0
 
 #define PERIODO_MINIMO_ENTRE_EXECUCOES 100 * MILLI
 
@@ -202,6 +201,8 @@ int atualiza_tempo(time_t *attr, int atualizar)
 
 Estado *le_aplica_estado(Estado *e, int id_andar)
 {
+    printf("\033[2J\033[1;1H");
+
     IF_DEBUG log_print("[DEP] le_aplica_estado iniciando\n", LEVEL_DEBUG);
 
     uint8_t end1, end2, end3;
@@ -214,10 +215,11 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
 
     int new_vagas = 0;
 
-    IF_DEBUG printf("          |-------------------------------|\n");
-    IF_DEBUG printf("vagas:    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 |\n");
-    IF_DEBUG printf("          |-------------------------------|\n");
-    IF_DEBUG printf("ocupacao: |");
+     printf("\n========= SERVIDOR DEPENDENTE %d (%s) ===========\n", id_andar, id_andar==1?"entrada":"piso superior");
+     printf("          | -------------------------------  \n");
+     printf("vagas:    |  1 | 2 | 3 | 4 | 5 | 6 | 7 | 8   \n");
+     printf("          | -------------------------------  \n");
+     printf("ocupacao: | ");
 
     // Itera por todas as vagas
     for (int i = 0; i < 8; i++)
@@ -235,7 +237,7 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         bcm2835_gpio_write(end3, vend3);
 
         fflush(NULL);
-        wait_micro(5000);
+        wait_micro(1000);
 
         int read = bcm2835_gpio_lev(INP_A1_SENSOR_VAGA);
         int ocupado = read == LOW;
@@ -243,29 +245,36 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         {
             new_vagas = new_vagas | (1 << i);
         }
-        IF_DEBUG printf(" %d |", ocupado);
+         printf(" %d", ocupado);
+        if (i < 7)printf(" |");
 
-        fflush(NULL);
     }
 
-    IF_DEBUG printf("\n");
-    IF_DEBUG printf("          |-------------------------------|\n");
+    printf("\n--------- | ------------------------------- \n");
 
+    int lotado, fechado;
     if (id_andar == 1)
     {
         e->vagas_andar_1 = new_vagas;
-        e->andar_1_lotado = 0x00FF == new_vagas;
+        fechado = e->andar_1_fechado;
+        lotado = e->andar_1_lotado = 0x00FF == new_vagas;
     }
 
     if (id_andar == 2)
     {
         e->vagas_andar_2 = new_vagas;
-        e->andar_2_lotado = 0x00FF == new_vagas;
+        fechado = e->andar_2_fechado;
+        lotado = e->andar_2_lotado = 0x00FF == new_vagas;
     }
+
+    printf("lotado:   | %s (%d)    \n", lotado ? "está lotado":"não está lotado" ,lotado);
+    printf("fechado:  | %s (%d)   \n",fechado ? "está fechado":"não está fechado", fechado);
 
     // entrada
     if (id_andar == 1)
     {
+        printf("-------------------------------------------\n");
+
         IF_DEBUG log_print("[DEP LE APLICA ESTADO] analisando entrada\n", LEVEL_DEBUG);
 
         atualiza_tempo(&e->sensor_de_presenca_entrada, bcm2835_gpio_lev(INP_A1_SENSOR_PRESENCA_CANCELA_ENTRADA));
@@ -282,11 +291,20 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         bcm2835_gpio_write(OUT_A1_MOTOR_CANCELA_SAIDA, e->motor_cancela_saida_ligado);
 
         bcm2835_gpio_write(OUT_A1_SINAL_DE_LOTADO_FECHADO, e->estacionamento_fechado || e->estacionamento_lotado);
+    
+        printf("motor_cancela_entrada:      | %s (%d) \n", e->motor_cancela_entrada_ligado ? "abrindo" : "fechando", e->motor_cancela_entrada_ligado);
+        printf("motor_cancela_saida:        | %s (%d)   \n", e->motor_cancela_saida_ligado ? "abrindo" : "fechando", e->motor_cancela_saida_ligado);
+        printf("sensor_de_presenca_entrada: | %s (%d)   \n", e->motor_cancela_saida_ligado ? "detectado" : "standby", e->motor_cancela_saida_ligado);
+        printf("sensor_de_passagem_entrada: | %s (%d)   \n", e->motor_cancela_saida_ligado ? "detectado" : "standby", e->motor_cancela_saida_ligado);
+        printf("sensor_de_passagem_saida:   | %s (%d)   \n", e->motor_cancela_saida_ligado ? "detectado" : "standby", e->motor_cancela_saida_ligado);
+        printf("sensor_de_presenca_saida:   | %s (%d)   \n", e->motor_cancela_saida_ligado ? "detectado" : "standby", e->motor_cancela_saida_ligado);
     }
 
     // não é entrada
     if (id_andar == 2)
     {
+        printf("-------------------------------------------\n");
+
         IF_DEBUG log_print("[DEP LE APLICA ESTADO] analisando passagem de andar\n", LEVEL_DEBUG);
 
         if (bcm2835_gpio_lev(INP_SENSOR_DE_PASSAGEM_1))
@@ -300,10 +318,14 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         }
 
         bcm2835_gpio_write(OUT_A2_SINAL_DE_LOTADO_FECHADO, e->estacionamento_fechado || e->estacionamento_lotado);
+
+        printf("sensor_de_subida_de_andar:  | %s (%d)  \n", e->motor_cancela_saida_ligado ? "detectado" : "standby", e->motor_cancela_saida_ligado);
+        printf("sensor_de_descida_de_andar: | %s (%d)  \n", e->motor_cancela_saida_ligado ? "detectado" : "standby", e->motor_cancela_saida_ligado);
     }
 
     e->tempo_ultima_execucao = get_time_mcs();
     e->ator_atual = id_andar == 1 ? ATOR_DEP1 : ATOR_DEP2;
+        fflush(NULL);
 
     return e;
 }
