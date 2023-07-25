@@ -22,4 +22,7 @@ char *read_env_str_index(char *name, int index);
 // if index is not present, may set index to a negative number
 double read_env_double_index(char *name, int index);
 
+void print_bits(char *str, size_t size);
+
+
 #endif

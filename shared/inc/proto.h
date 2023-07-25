@@ -85,4 +85,6 @@ Estado *inicializar_estado(char *env_name, int ator_atual);
 
 Estado *copiar_estado(Estado *e);
 
+void print_estado(Estado* e);
+
 #endif

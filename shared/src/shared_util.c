@@ -101,3 +101,18 @@ double read_env_double_index(char *name, int index)
         return 0;
     return atof(val);
 }
+
+
+void print_bits(char *str, size_t size)
+{
+    for (size_t i = 0; i < size * 8; i++)
+    {
+        int d = i / 8, r = i % 8;
+        if (r == 0)
+            printf("0x%x \t| ", str[d]);
+        printf("%d", !!(str[d] & (1 << r)));
+        if (r == 7)
+            printf("\n");
+    }
+    printf("\n");
+}

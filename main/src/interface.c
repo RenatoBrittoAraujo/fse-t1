@@ -30,6 +30,7 @@
 #define DRAW_FREQUENCY 100
 
 int readv;
+FILE* oldstdout;
 
 void get_inp_char(ThreadState *ts, void *args)
 {
@@ -89,23 +90,16 @@ void get_inp_char(ThreadState *ts, void *args)
     // newterm(NULL, stdin, stdin);
 
         // Redirect stdout back to the terminal
-    freopen("/dev/null", "w", stdout);
 
     //     // Redirect stdout back to the terminal
     // freopen("/dev/null", "r", stdin);
+    // freopen("/dev/null", "w", stdout);
 
     pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
     pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, NULL);
 
     // Initialize ncurses again for another session
     initscr();
-    freopen("/dev/null", "w", stdout);
-    // newterm();
-    // stdscr = newterm(NULL, stdout, stdin);
-    cbreak(); // Disable line buffering
-    freopen("/dev/null", "w", stdout);
-    noecho(); // Disable echoing of user input
-    freopen("/dev/null", "w", stdout);
 
     // Your big program logic for the second session...
 
@@ -190,6 +184,8 @@ Estado *ler_comando(Estado *e)
     ThreadState *t = create_thread_state(-1);
     t->routine = get_inp_char;
     readv = '0';
+
+
     start_thread(t);
     wait_micro(100*MILLI);
     printf("THREAD END\n");fflush(NULL);
@@ -200,7 +196,7 @@ Estado *ler_comando(Estado *e)
     printf("pthread_join\n");fflush(NULL);
     pthread_join(t->thread_id, NULL);
 
-    freopen("/dev/tty", "w", stdout);
+    // freopen("/dev/tty", "w", oldstdout);
     
     printf("JOINED! with c = %d\n", readv);fflush(NULL);
     c = readv;
@@ -253,17 +249,31 @@ Estado *ler_comando(Estado *e)
 }
 
 int inicial = 1;
+
+int t = 0;
 Estado *processar_interface(Estado *e)
 {
+    oldstdout = stdout;
+    printf("\033[2J\033[1;1H");
     desenha_interface(e);
-    if (inicial)
-    {
-        inicial = 0;
-    }
+    // if (inicial)
+    // {
+    //     inicial = 0;
+    // }
+    // else
+    // {
+
+    //     e = ler_comando(e);
+    // }1
+
+    if (t == 0) t= get_time_mcs();
     else
     {
-
-        e = ler_comando(e);
+        if (t + 2*SECOND*MILLI<get_time_mcs())
+        {
+            t=  get_time_mcs();
+            e->andar_1_fechado = 1 - e->andar_1_fechado; 
+        }
     }
 
     return e;

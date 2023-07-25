@@ -12,7 +12,7 @@
 #include "shared/inc/comm.h"
 #include "shared/inc/errors.h"
 
-#define DEBUG 0
+#define DEBUG 1
 
 #define PERIODO_MINIMO_ENTRE_EXECUCOES 100 * MILLI
 
@@ -125,6 +125,22 @@ char *handle_request_servidor_principal(void *c_request, void *IGNORE_estado_dep
 
     Estado *e = (Estado *)c_request;
 
+    printf("I GOT ESTACIONAMENTO ESTADO:\n");
+    print_estado(e);
+
+    if (e->ator_atual != ATOR_MAIN)
+    {
+         log_print("[DEP] IGNOREI ESTADO PORQUE ATOR NÃO É MAIN!", LEVEL_ERROR);
+         printf("[DEP] ator = %d\n", e->ator_atual);
+         log_print("[DEP] RETORNANDO ECHO DO ESTADO ATUAL!", LEVEL_ERROR);
+        fflush(NULL);
+    char *resposta = transforma_estado_em_string(e);
+        return resposta;
+    }
+
+    printf("I GET ESTACIONAMENTO %d O VALOR FECHADO = %d\n", id_andar, id_andar==1? e->andar_1_fechado : e->andar_2_fechado);
+    fflush(NULL);
+
     e->num_vagas_andar_1 = e_novo->num_vagas_andar_1;
 
     e->andar_1_fechado = e_novo->andar_1_fechado;
@@ -166,6 +182,7 @@ void escuta_main(ThreadState *ts, void *args)
         ip = e->ip_andar_2;
     }
 
+    log_print("ABRINDO PORTA PRA ESCUTAR A MAIN", LEVEL_DEBUG);
     t_error err = listen_tcp_ip_port(ip, porta, handle_request_servidor_principal, args, NULL);
 
     if (err)
@@ -201,7 +218,7 @@ int atualiza_tempo(time_t *attr, int atualizar)
 
 Estado *le_aplica_estado(Estado *e, int id_andar)
 {
-    printf("\033[2J\033[1;1H");
+    // printf("\033[2J\033[1;1H");
 
     IF_DEBUG log_print("[DEP] le_aplica_estado iniciando\n", LEVEL_DEBUG);
 

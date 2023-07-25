@@ -17,7 +17,7 @@
 #define SHARED_TCP_IP_ERROR_LISTEN_FAILED 1005
 #define SHARED_TCP_IP_ERROR_ACCEPT_FAILED 1006
 
-#define DEBUG 0
+#define DEBUG 1
 #define IF_DEBUG if(DEBUG)
 
 // res_buff may be NULL, response will not be set
@@ -109,8 +109,7 @@ t_error listen_tcp_ip_port(char *ip, int port, char *(*get_response)(void *, voi
 
     while (1)
     {
-        IF_DEBUG log_print("[shared.tcp_ip] [listen_tcp_ip_port] waiting for connection\n", LEVEL_ERROR);
-        IF_DEBUG printf("Waiting for connection...\n");
+        IF_DEBUG log_print("[shared.tcp_ip] [listen_tcp_ip_port] waiting for connection\n", LEVEL_DEBUG);
         if ((new_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
         {
             return handle_error(SHARED_TCP_IP_ERROR_ACCEPT_FAILED, "[shared.tcp_ip] [listen_tcp_ip_port] accept failed");

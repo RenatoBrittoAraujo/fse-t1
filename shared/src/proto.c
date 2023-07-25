@@ -53,3 +53,36 @@ Estado *copiar_estado(Estado *e)
     memcpy(ne, e, sizeof(Estado));
     return ne;
 }
+
+void print_estado(Estado* e){
+    printf("ator_atual = %d\n", e->ator_atual); 
+    printf("tempo_ultima_execucao = %d\n", e->tempo_ultima_execucao); 
+    printf("num_andares = %d\n", e->num_andares); 
+    printf("estacionamento_fechado = %d\n", e->estacionamento_fechado); 
+    printf("estacionamento_lotado = %d\n", e->estacionamento_lotado); 
+    printf("estacionamento_fechado = %d\n", e->estacionamento_fechado); 
+    printf("estacionamento_lotado = %d\n", e->estacionamento_lotado); 
+    printf("num_vagas_andar_1 = %d\n", e->num_vagas_andar_1); 
+    printf("vagas_andar_1 = %d\n", e->vagas_andar_1); 
+    printf("andar_1_fechado = %d\n", e->andar_1_fechado); 
+    printf("andar_1_lotado = %d\n", e->andar_1_lotado); 
+    printf("motor_cancela_entrada_ligado = %d\n", e->motor_cancela_entrada_ligado); 
+    printf("motor_cancela_saida_ligado = %d\n", e->motor_cancela_saida_ligado); 
+    printf("sensor_de_presenca_entrada = %d\n", e->sensor_de_presenca_entrada); 
+    printf("sensor_de_presenca_saida = %d\n", e->sensor_de_presenca_saida); 
+    printf("sensor_de_passagem_entrada = %d\n", e->sensor_de_passagem_entrada); 
+    printf("sensor_de_passagem_saida = %d\n", e->sensor_de_passagem_saida); 
+    printf("num_vagas_andar_2 = %d\n", e->num_vagas_andar_2); 
+    printf("vagas_andar_2 = %d\n", e->vagas_andar_2); 
+    printf("andar_2_fechado = %d\n", e->andar_2_fechado); 
+    printf("sensor_de_subida_de_andar = %d\n", e->sensor_de_subida_de_andar); 
+    printf("sensor_de_descida_de_andar = %d\n", e->sensor_de_descida_de_andar); 
+    printf("andar_2_lotado = %d\n", e->andar_2_lotado); 
+    printf("porta_andar_1 = %d\n", e->porta_andar_1); 
+    printf("porta_andar_2 = %d\n", e->porta_andar_2); 
+    printf("ip_andar_1 = %s\n", e->ip_andar_1); 
+    printf("ip_andar_2 = %s\n", e->ip_andar_2); 
+    printf("t_dep_1 = %p\n", e->t_dep_1); 
+    printf("t_dep_2 = %p\n", e->t_dep_2);
+    fflush(NULL); 
+}
