@@ -1,24 +1,24 @@
 {
-    "files.associations": {
-        "bcm2835.h": "c",
-        "unistd.h": "c",
-        "*.tcc": "c",
-        "cstdio": "c",
-        "stdio.h": "c",
-        "proto.h": "c",
-        "shared_util.h": "c",
-        "string.h": "c",
-        "time.h": "c",
-        "numbers": "c",
-        "tcp_ip.h": "c",
-        "errors.h": "c",
-        "threads.h": "c",
-        "stdlib.h": "c",
-        "garbage_collector.h": "c",
-        "interface.h": "c",
-        "typeinfo": "c",
-        "comm.h": "c",
-        "stdint.h": "c"
-    },
-    "C_Cpp.intelliSenseEngineFallback": "enabled"
+  "files.associations": {
+    "bcm2835.h": "c",
+    "unistd.h": "c",
+    "*.tcc": "c",
+    "cstdio": "c",
+    "stdio.h": "c",
+    "proto.h": "c",
+    "shared_util.h": "c",
+    "string.h": "c",
+    "time.h": "c",
+    "numbers": "c",
+    "tcp_ip.h": "c",
+    "errors.h": "c",
+    "threads.h": "c",
+    "stdlib.h": "c",
+    "garbage_collector.h": "c",
+    "interface.h": "c",
+    "typeinfo": "c",
+    "comm.h": "c",
+    "stdint.h": "c"
+  },
+  "C_Cpp.intelliSenseEngineFallback": "enabled"
 }

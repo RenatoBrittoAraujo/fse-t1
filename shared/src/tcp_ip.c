@@ -9,14 +9,6 @@
 #include <shared/inc/shared_util.h>
 #include <shared/inc/tcp_ip.h>
 
-#define SHARED_TCP_IP_ERROR_SOCKET_CREATION_FAILED 1000
-#define SHARED_TCP_IP_ERROR_INVALID_ADDRESS 1001
-#define SHARED_TCP_IP_ERROR_CONNECTION_FAILED 1002
-#define SHARED_TCP_IP_ERROR_BIND_FAILED 1003
-#define SHARED_TCP_IP_ERROR_SOCKOPT_FAILED 1004
-#define SHARED_TCP_IP_ERROR_LISTEN_FAILED 1005
-#define SHARED_TCP_IP_ERROR_ACCEPT_FAILED 1006
-
 #define DEBUG 0
 #define IF_DEBUG if(DEBUG)
 
@@ -51,7 +43,7 @@ t_error call_tcp_ip_port(char *request,size_t req_size, char *ip, int port, char
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
         IF_DEBUG log_print("[shared.tcp_ip] [call_tcp_ip_port] ():ERRO3\n", LEVEL_DEBUG);
-        return handle_error(SHARED_TCP_IP_ERROR_CONNECTION_FAILED, "[shared.tcp_ip] [call_tcp_ip_port] connection failed");
+        return SHARED_TCP_IP_ERROR_CONNECTION_FAILED;
     }
 
     IF_DEBUG printf("SENDING BYTES: %u\n", req_size);

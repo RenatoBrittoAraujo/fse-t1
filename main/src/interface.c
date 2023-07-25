@@ -254,7 +254,7 @@ int t = 0;
 Estado *processar_interface(Estado *e)
 {
     oldstdout = stdout;
-    printf("\033[2J\033[1;1H");
+    // printf("\033[2J\033[1;1H");
     desenha_interface(e);
     // if (inicial)
     // {

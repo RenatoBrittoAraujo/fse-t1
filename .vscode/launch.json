@@ -53,9 +53,7 @@
       "program": "${workspaceFolder}/dep/dep_dev",
       "args": [],
       "cwd": "${workspaceFolder}/dep",
-      "startupCmds": [
-        "make all_dep_dev"
-      ],
+      "startupCmds": ["make all_dep_dev"],
       "externalConsole": true,
       "env": {
         "ENV": "PROD",

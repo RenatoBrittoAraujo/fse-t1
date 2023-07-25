@@ -60,23 +60,29 @@ void chama_dependente(ThreadState *ts, void *args)
         fflush(NULL);
         pthread_exit(NULL);
     }
-    int id_andar = dependente == ATOR_DEP1 ? 1:2;
+    int id_andar = dependente == ATOR_DEP1 ? 1 : 2;
 
-    printf("I SENT ESTACIONAMENTO %d O ESTADO:\n", id_andar);
-    print_estado(estado_main);
+    // IF_DEBUG printf("[MAIN THREAD] I SENT ESTACIONAMENTO %d O ESTADO:\n", id_andar);
+    // IF_DEBUG print_estado(estado_main);
     char *req = transforma_estado_em_string(estado_main);
 
     char res_buff[MAX_FRAME_SIZE];
 
-    IF_DEBUG printf("chamando dependente no endereço: %s:%d\n", ip, porta);
+    IF_DEBUG printf("[MAIN THREAD] chamando dependente no endereço: %s:%d\n", ip, porta);
     fflush(NULL);
 
     t_error err = call_tcp_ip_port(req, sizeof(Estado), ip, porta, res_buff);
-    IF_DEBUG printf("call finalizada!\n");
+    if (err == SHARED_TCP_IP_ERROR_CONNECTION_FAILED)
+    {
+        IF_DEBUG printf("[MAIN THREAD] servidor do andar %d não respondeu\n", id_andar);
+        pthread_exit(NULL);
+    }
+
+    IF_DEBUG printf("[MAIN THREAD] call finalizada!\n");
     fflush(NULL);
 
     free(req);
-    IF_DEBUG printf("request limpa da memoria\n");
+    IF_DEBUG printf("[MAIN THREAD] request limpa da memoria\n");
     fflush(NULL);
 
     if (err != NO_ERROR)
@@ -92,7 +98,7 @@ void chama_dependente(ThreadState *ts, void *args)
 
     estado_dep = parse_string_estado(res_buff);
 
-    IF_DEBUG printf("resposta parseada = %p\n", estado_dep);
+    IF_DEBUG printf("[MAIN THREAD] resposta parseada = %p\n", estado_dep);
     fflush(NULL);
 
     pthread_exit(estado_dep);
@@ -219,22 +225,36 @@ Estado *controla(Estado *e)
 
     if (res_dep_1_void_p == NULL)
     {
-        IF_DEBUG log_print("[MAIN CONTROLA] dependente 1 não respondeu\n", LEVEL_ERROR);
-        exit(1);
+        log_print("[MAIN CONTROLA] dependente 1 não respondeu\n", LEVEL_ERROR);
+    }
+    else
+    {
+        IF_DEBUG log_print("[MAIN CONTROLA] combinando estado servidor dependente 1\n", LEVEL_DEBUG);
+        Estado *res_dep_1 = (Estado *)res_dep_1_void_p;
+
+        e->andar_1_lotado = res_dep_1->andar_1_lotado;
+        e->vagas_andar_1 = res_dep_1->vagas_andar_1;
+        e->sensor_de_presenca_entrada = res_dep_1->sensor_de_presenca_entrada;
+        e->sensor_de_presenca_saida = res_dep_1->sensor_de_presenca_saida;
+        e->sensor_de_passagem_entrada = res_dep_1->sensor_de_passagem_entrada;
+        e->sensor_de_passagem_saida = res_dep_1->sensor_de_passagem_saida;
     }
 
     if (res_dep_2_void_p == NULL)
     {
-        IF_DEBUG log_print("[MAIN CONTROLA] dependente 2 não respondeu\n", LEVEL_ERROR);
-        exit(1);
+        log_print("[MAIN CONTROLA] dependente 2 não respondeu\n", LEVEL_ERROR);
     }
+    else
+    {
+        Estado *res_dep_2 = (Estado *)res_dep_2_void_p;
 
-    Estado *res_dep_1 = (Estado *)res_dep_1_void_p;
-    Estado *res_dep_2 = (Estado *)res_dep_2_void_p;
+        IF_DEBUG log_print("[MAIN CONTROLA] combinando estado servidor dependente 2\n", LEVEL_DEBUG);
 
-    IF_DEBUG log_print("[MAIN CONTROLA] respostas recebidas, combinando resultados\n", LEVEL_DEBUG);
-
-    // [TODO] join estados
+        e->andar_2_lotado = res_dep_2->andar_2_lotado;
+        e->vagas_andar_2 = res_dep_2->vagas_andar_2;
+        e->sensor_de_subida_de_andar = res_dep_2->sensor_de_subida_de_andar;
+        e->sensor_de_descida_de_andar = res_dep_2->sensor_de_descida_de_andar;
+    }
 
     IF_DEBUG log_print("[MAIN CONTROLA] resultados combinados, novo estado gerado\n", LEVEL_DEBUG);
 
