@@ -19,6 +19,6 @@ int main()
         printf("\n");fflush(NULL);
         e = processar_interface(e);
         // separa os logs de todas as iterações do loop principal
-        printf("\n\n\n\n");fflush(NULL);
+        printf("\n\n");fflush(NULL);
     }
 }

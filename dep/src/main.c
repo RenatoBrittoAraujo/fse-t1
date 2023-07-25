@@ -366,8 +366,8 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
 
         bcm2835_gpio_write(OUT_A1_MOTOR_CANCELA_SAIDA, e->motor_cancela_saida_ligado); 
 
-        printf("motor_cancela_entrada:      | %s (%lu) \n", e->motor_cancela_entrada_ligado ? "abrindo" : "fechando", e->motor_cancela_entrada_ligado);
-        printf("motor_cancela_saida:        | %s (%lu)   \n", e->motor_cancela_saida_ligado ? "abrindo" : "fechando", e->motor_cancela_saida_ligado);
+        printf("motor_cancela_entrada:      | %s (%d) \n", e->motor_cancela_entrada_ligado ? "abrindo" : "fechando", e->motor_cancela_entrada_ligado);
+        printf("motor_cancela_saida:        | %s (%d)   \n", e->motor_cancela_saida_ligado ? "abrindo" : "fechando", e->motor_cancela_saida_ligado);
         printf("sensor_de_presenca_entrada: | %lu   \n", e->sensor_de_presenca_entrada);
         printf("sensor_de_passagem_entrada: | %lu   \n", e->sensor_de_passagem_entrada);
         printf("sensor_de_presenca_saida:   | %lu   \n", e->sensor_de_presenca_saida);

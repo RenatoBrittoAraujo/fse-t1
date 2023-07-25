@@ -41,6 +41,19 @@ Estado *inicializar_estado(char *env_name, int ator_atual)
     e->sensor_de_subida_de_andar = 0;
     e->sensor_de_descida_de_andar = 0;
     e->andar_2_lotado = 0;
+    e->entrada_pendente = 0;
+    e->saida_pendente = 0;
+    
+    e->preco_por_segundo = 1;
+
+    e->last_saida_i = -1;
+    e->last_entrada_i = -1;
+
+    e->estacionou_na_vaga = -1;
+    e->saiu_da_vaga = -1;
+
+    for (int i =0 ; i < 16; i++)
+        e->id_vagas[i] = -1;
 
     e->t_dep_1 = e->t_dep_2 = e->t_main = NULL;
 

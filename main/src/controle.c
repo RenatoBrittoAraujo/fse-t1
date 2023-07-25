@@ -206,6 +206,10 @@ Estado *controla(Estado *e)
         {
             // novo carro entrou no estacionamento
 
+            e->timestamp_last_entrada = get_time_mcs();
+            e->id_last_entrada++;
+            e->entrada_pendente = 1;
+
             // salva id do carro
             // salva horario entrada carro
             // salva que sistema esta esperando nova vaga ser ocupada
@@ -222,17 +226,113 @@ Estado *controla(Estado *e)
         if (e->nova_presenca_saida == 1)
         {
             // carro saiu do estacionamento
-
-            // encontra id do carro
-            // calcula preço
+            e->timestamp_last_saida = get_time_mcs();
+            e->id_last_saida = 
+            e->saida_pendente = 1;
         }
         e->nova_presenca_saida = 0;
     }
 
-    if (e->timestamp_ultimo_carro > e->tempo_ultima_execucao)
-    {
+    int vagas_mudaram = (e->vagas_andar_1 != e->last_vagas_andar_1) || (e->vagas_andar_2 != e->last_vagas_andar_2);
 
+    int num_vagas_last = 0, num_vagas_now = 0;
+
+    for (int i =0; i < 8; i++) if (e->vagas_andar_1 & (1<<i)) num_vagas_now++;
+    for (int i =0; i < 8; i++) if (e->vagas_andar_2 & (1<<i)) num_vagas_now++;
+    for (int i =0; i < 8; i++) if (e->last_vagas_andar_1 & (1<<i)) num_vagas_last++;
+    for (int i =0; i < 8; i++) if (e->last_vagas_andar_2 & (1<<i)) num_vagas_last++;
+
+    printf("NUM VAGAS LAST = %d  |  NUM_VAGAS_NOW = %d\n", num_vagas_last, num_vagas_now);
+    printf("ENTRADA PENDENTE = %d  |  SAIDA PENDENTE = %d\n", e->entrada_pendente, e->saida_pendente);
+
+    if (num_vagas_last - num_vagas_now == -1  )
+    printf("VAGA FOR OCUPADA\n");
+
+    if (num_vagas_last - num_vagas_now == 1)
+    printf("VAGA FOI DESOCUPADA\n");
+    fflush(NULL);
+
+    if (e->entrada_pendente && num_vagas_last + 1 == num_vagas_now)
+    {
+        int vaga_i;
+        int andar;
+
+        for (int i =0; i <8; i++) if (e->vagas_andar_1 && (1<<i) != e->last_vagas_andar_1 && (1<<i))
+        {
+            vaga_i = i;
+            andar =1;
+        }
+
+                for (int i =0; i <8; i++) if (e->vagas_andar_2 && (1<<i) != e->last_vagas_andar_2 && (1<<i))
+        {
+            vaga_i = i;
+            andar =2;
+        }
+
+        if (andar == 2) vaga_i += 8;
+
+        if (e->id_vagas[vaga_i] != -1)
+        {
+            log_print("[MAIN] vaga de estacionamento estava ocupada!", LEVEL_ERROR);
+        }
+
+        e->last_entrada_i = vaga_i;
+
+        e->id_vagas[vaga_i] = e->id_last_entrada;
+        e->entrada_time[vaga_i] = get_time_mcs();
+        e->estacionou_na_vaga = vaga_i;
+
+        e->entrada_pendente = 0;
     }
+
+    if (num_vagas_last - 1 == num_vagas_now)
+    {
+        int vaga_i;
+        int andar;
+
+        for (int i =0; i <8; i++) if (e->vagas_andar_1 && (1<<i) != e->last_vagas_andar_1 && (1<<i))
+        {
+            vaga_i = i;
+            andar =1;
+        }
+
+                for (int i =0; i <8; i++) if (e->vagas_andar_2 && (1<<i) != e->last_vagas_andar_2 && (1<<i))
+        {
+            vaga_i = i;
+            andar =2;
+        }
+
+        if (andar == 2) vaga_i += 8;
+        e->last_saida_i = vaga_i;
+    }
+
+    if (e->saida_pendente)
+    {
+        if (e->last_saida_i == -1)
+        {
+            log_print("[MAIN] vaga de saida nao pode ser detectada!", LEVEL_ERROR);
+
+        } else {
+            int vaga_i = e->last_saida_i;
+            if (e->id_vagas[vaga_i] == -1)
+            {
+                log_print("[MAIN] vaga de saida estava vazia!", LEVEL_ERROR);
+            }
+
+            int id = e->id_vagas[vaga_i];
+            e->saiu_da_vaga=vaga_i;
+            e->id_vagas[vaga_i] = -1;
+            int tempo_segundos = (get_time_mcs() - e->entrada_time[vaga_i])/1e6;
+            int preco = tempo_segundos*e->preco_por_segundo;
+            e->preco_pago_last_carro = preco;
+        }
+
+        e->last_saida_i = -1;
+        e->saida_pendente = 0;
+    }
+
+    e->last_vagas_andar_1 = e->vagas_andar_1;
+    e->last_vagas_andar_2 = e->vagas_andar_2;
 
     // ========= VAGAS
 
@@ -308,15 +408,3 @@ Estado *controla(Estado *e)
 
     return e;
 }
-
-// char *get_response(void *req, void *res_data)
-// {
-//     // le a resposta do servidor dependente
-//     Estado *request_dependente = parse_string_estado((char *)req);
-//     Estado *novo_estado_dependente = (Estado *)request_dependente;
-//     memcpy(req, novo_estado_dependente, sizeof(Estado));
-
-//     // envia a resposta do servidor principal
-//     char *res_str = transforma_estado_em_string((Estado *)res_data);
-//     return res_str;
-// }

@@ -30,7 +30,7 @@
 #define DRAW_FREQUENCY 100
 
 int readv;
-FILE* oldstdout;
+FILE *oldstdout;
 
 void get_inp_char(ThreadState *ts, void *args)
 {
@@ -83,13 +83,12 @@ void get_inp_char(ThreadState *ts, void *args)
     // cbreak();    // Disable line buffering (pass characters immediately to the program)
     // noecho();    // Don't echo user input to the screen
 
-
     // Set NCURSES_NO_UTF8_ACS environment variable to ignore ncurses
 
     // FILE* dontcare = freopen("/dev/null", "w", stdout);
     // newterm(NULL, stdin, stdin);
 
-        // Redirect stdout back to the terminal
+    // Redirect stdout back to the terminal
 
     //     // Redirect stdout back to the terminal
     // freopen("/dev/null", "r", stdin);
@@ -113,7 +112,6 @@ void get_inp_char(ThreadState *ts, void *args)
     // End ncurses for the second session
     endwin();
 
-
     pthread_exit((void *)c);
 
     // return c;
@@ -131,15 +129,29 @@ void desenha_interface(Estado *e)
 {
     // ====== DISPLAY
     printf("|------------ GERENCIADOR DE ESTACIONAMENTO ------------|\n");
-    printf("        timestamp (microsegundos): %lu                  \n", get_time_mcs());
-    printf("        numero de andares: %d                   \n", e->num_andares);
+    printf("        timestamp (microsegundos):  %lu                  \n", get_time_mcs());
+    printf("        numero de andares:          %d                   \n", e->num_andares);
     printf("        sensor_abertura_entrada:    %lu    \n", e->sensor_de_presenca_entrada);
     printf("        sensor_fechamento_entrada:  %lu \n", e->sensor_de_passagem_entrada);
     printf("        sensor_abertura_saida:      %lu     \n", e->sensor_de_presenca_saida);
     printf("        sensor_fechamento_saida:    %lu   \n", e->sensor_de_passagem_saida);
     printf("        sensor_de_subida:           %lu   \n", e->sensor_de_subida_de_andar);
     printf("        sensor_de_descida:          %lu  \n", e->sensor_de_descida_de_andar);
+    printf("        timestamp_last_entrada:     %lu  \n", e->timestamp_last_entrada);
+    printf("        timestamp_last_saida:       %lu  \n", e->timestamp_last_saida);
+    printf("        id_last_entrada:            %lu  \n", e->id_last_entrada);
+    printf("        id_last_saida:              %lu  \n", e->id_last_saida);
 
+
+    if (e->estacionou_na_vaga !=-1||1)
+    {
+
+    printf("      ULTIMO CARRO ESTACIONOU NA VAGA %d DO %d ANDAR  \n", e->estacionou_na_vaga%8, e->estacionou_na_vaga /8 + 1);
+    }
+    if (e->saiu_da_vaga !=-1||1)
+{
+    printf("      ULTIMO CARRO SAIU NA VAGA %d DO %d ANDAR  \n", e->saiu_da_vaga%8, e->saiu_da_vaga /8 + 1);
+}
     for (int id_andar = 1; id_andar <= e->num_andares; id_andar++)
     {
         printf("|---------------------- andar %d ------------------------|\n", id_andar);
@@ -183,20 +195,23 @@ Estado *ler_comando(Estado *e)
     t->routine = get_inp_char;
     readv = '0';
 
-
     start_thread(t);
-    wait_micro(100*MILLI);
-    printf("THREAD END\n");fflush(NULL);
+    wait_micro(100 * MILLI);
+    printf("THREAD END\n");
+    fflush(NULL);
     char c;
     // Request the cancellation of the thread
-    printf("pthread_cancel\n");fflush(NULL);
+    printf("pthread_cancel\n");
+    fflush(NULL);
     pthread_cancel(t->thread_id);
-    printf("pthread_join\n");fflush(NULL);
+    printf("pthread_join\n");
+    fflush(NULL);
     pthread_join(t->thread_id, NULL);
 
     // freopen("/dev/tty", "w", oldstdout);
-    
-    printf("JOINED! with c = %d\n", readv);fflush(NULL);
+
+    printf("JOINED! with c = %d\n", readv);
+    fflush(NULL);
     c = readv;
     if (readv == '0')
     {
@@ -270,8 +285,8 @@ Estado *processar_interface(Estado *e)
     //     if (t + 2*SECOND*MILLI<get_time_mcs())
     //     {
     //         t=  get_time_mcs();
-    //         e->andar_1_fechado = 1 - e->andar_1_fechado; 
-    //         e->andar_2_fechado = 1 - e->andar_2_fechado; 
+    //         e->andar_1_fechado = 1 - e->andar_1_fechado;
+    //         e->andar_2_fechado = 1 - e->andar_2_fechado;
     //     }
     // }
 

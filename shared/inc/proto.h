@@ -60,8 +60,24 @@ struct Estado
     int nova_presenca_entrada;
     int nova_presenca_saida;
 
-    int timestamp_ultimo_carro;
-    int id_last_carro;
+    int timestamp_last_entrada;
+    int timestamp_last_saida;
+    
+    int id_last_entrada;
+    int id_last_saida;
+    int entrada_pendente;
+    int saida_pendente;
+
+    int preco_pago_last_carro;
+    int preco_por_segundo;
+
+    int id_vagas[16];
+    int entrada_time[16];
+    int estacionou_na_vaga;
+    int saiu_da_vaga;
+
+    int last_entrada_i;
+    int last_saida_i;
 
     // ---------- entradas para andar 1
     int num_vagas_andar_1;
@@ -72,6 +88,7 @@ struct Estado
     // ---------- saidas do andar 1
     int andar_1_lotado;
     int vagas_andar_1;
+    int last_vagas_andar_1;
     unsigned long sensor_de_presenca_entrada;
     unsigned long sensor_de_presenca_saida;
     unsigned long sensor_de_passagem_entrada;
@@ -84,6 +101,7 @@ struct Estado
     // ---------- entradas do andar 2
     int andar_2_lotado;
     int vagas_andar_2;
+    int last_vagas_andar_2;
     unsigned long sensor_de_subida_de_andar;
     unsigned long sensor_de_descida_de_andar;
 } __attribute__((packed));
