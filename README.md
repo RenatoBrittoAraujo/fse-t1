@@ -12,6 +12,36 @@ Removi tudo que não era relevante pra entrega incial, como:
 - ambiente de dev e test
 - dockerfile e docker-compose
 
+## Requisitos cumpridos
+
+- [x] Interface (Monitoramento): como visto no gif abaixo
+- [x] Interface (Comandos):  
+- [x] Monitoramento das Vagas
+- [x] Contabilização de Pagamentos
+- [x] Monitoramento das Vagas
+- [x] Controle das Cancelas
+- [x] Sensor de Passagem de Carros
+- [x] Comunicação TCP/IP
+- [x] Persistência dos serviços
+- [x] Qualidade do Código / Execução
+- [x] Qualidade e usabilidade acima da média.
+
+Eeu **muito** trabalho pra implementar a interface com comandos. Mas agora funciona. É só apertar a tecla com o terminal do servidor principal selecionado. Os seguintes comandos estão implementados:
+
+```
+  0 - FECHAR estacionamento
+  1 - FECHAR andar 1 
+  2 - FECHAR andar 2 
+  3 - FORÇAR abertura cancela entrada 
+  4 - FORÇAR abertura cancela saida 
+  5 - FORÇAR fechamento cancela entrada 
+  6 - FORÇAR fechamento cancela saida 
+```
+
+#### Interface (Comandos)
+
+Tentei fazer funcionar a leitura com print constante, mas tive muitos por
+
 ## Descrição
 
 O sistema é composto de 3 apis.
@@ -37,6 +67,9 @@ Exemplo de execução:
 ![](figuras/simplescreenrecorder-2023-07-25_12.20.22.gif)
 
 Note como os 3 servicos foram executados. A ordem de execução não importa (atendendo o requisito de persistencia).
+
+A Interface possui os seguintes comandos:
+
 
 
 

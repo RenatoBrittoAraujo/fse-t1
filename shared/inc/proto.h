@@ -84,6 +84,10 @@ struct Estado
     int andar_1_fechado;
     int motor_cancela_entrada_ligado;
     int motor_cancela_saida_ligado;
+    unsigned long override_motor_cancela_entrada;
+    unsigned long override_motor_cancela_saida;
+    unsigned long override_motor_0_cancela_entrada;
+    unsigned long override_motor_0_cancela_saida;
 
     // ---------- saidas do andar 1
     int andar_1_lotado;

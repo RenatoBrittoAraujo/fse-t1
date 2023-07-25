@@ -15,6 +15,9 @@ int main()
     Estado *e = NULL;
     while (1)
     {
+        read_input();
+        // printf("\033[2J\033[1;1H");
+
         e = controla(e);
         printf("\n");
         fflush(NULL);

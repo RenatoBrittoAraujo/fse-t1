@@ -40,8 +40,19 @@ char *transforma_estado_em_string(Estado *req)
     ((Estado *)frame)->sensor_de_presenca_saida = htonl(req->sensor_de_presenca_saida);
     ((Estado *)frame)->sensor_de_passagem_entrada = htonl(req->sensor_de_passagem_entrada);
     ((Estado *)frame)->sensor_de_passagem_saida = htonl(req->sensor_de_passagem_saida);
+    
+    ((Estado *)frame)->override_motor_cancela_entrada = htonl(req->override_motor_cancela_entrada);
+    ((Estado *)frame)->override_motor_cancela_saida = htonl
+    (req->override_motor_cancela_saida);
+
+
+    ((Estado *)frame)->override_motor_0_cancela_entrada = htonl(req->override_motor_0_cancela_entrada);
+    ((Estado *)frame)->override_motor_0_cancela_saida = htonl(req->override_motor_0_cancela_saida);
+
     ((Estado *)frame)->sensor_de_subida_de_andar = htonl(req->sensor_de_subida_de_andar);
     ((Estado *)frame)->sensor_de_descida_de_andar = htonl(req->sensor_de_descida_de_andar);
+
+    
 
     return frame;
 }
@@ -73,6 +84,11 @@ Estado *parse_string_estado(char *res_str)
     res->sensor_de_passagem_saida = ntohl(e->sensor_de_passagem_saida);
     res->sensor_de_subida_de_andar = ntohl(e->sensor_de_subida_de_andar);
     res->sensor_de_descida_de_andar = ntohl(e->sensor_de_descida_de_andar);
+
+    res->override_motor_cancela_entrada = htonl(e->override_motor_cancela_entrada);
+res->override_motor_cancela_saida = htonl(e->override_motor_cancela_saida);
+    res->override_motor_0_cancela_entrada = htonl(e->override_motor_0_cancela_entrada);
+res->override_motor_0_cancela_saida = htonl(e->override_motor_0_cancela_saida);
 
     return res;
 }

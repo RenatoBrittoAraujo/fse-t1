@@ -152,6 +152,13 @@ char *handle_request_servidor_principal(void *c_request, void *estado_dep, int *
 
     e->andar_2_fechado = e_novo->andar_2_fechado;
 
+    e->override_motor_cancela_entrada = e_novo->override_motor_cancela_entrada;
+
+    e->override_motor_cancela_saida = e_novo->override_motor_cancela_saida;
+
+    e->override_motor_0_cancela_entrada = e_novo->override_motor_0_cancela_entrada;
+    e->override_motor_0_cancela_saida = e_novo->override_motor_0_cancela_saida;
+
     free(e_novo);
 
     IF_DEBUG log_print("[DEP] estado antigo sobrescrito", LEVEL_DEBUG);
@@ -345,7 +352,17 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
 
         int now = get_time_mcs();
 
-        if (now - e->sensor_de_presenca_entrada < TEMPO_MINIMO_CANCELA_ABERTA ||
+        if (now - e->override_motor_cancela_entrada < TEMPO_MINIMO_CANCELA_ABERTA)
+        {
+            e->motor_cancela_entrada_ligado = 1;
+
+        }
+        else if(now - e->override_motor_0_cancela_entrada > TEMPO_MINIMO_CANCELA_ABERTA)
+        {
+            e->motor_cancela_entrada_ligado = 0;
+
+        }
+        else if (now - e->sensor_de_presenca_entrada < TEMPO_MINIMO_CANCELA_ABERTA ||
             now - e->sensor_de_passagem_entrada < TEMPO_MINIMO_CANCELA_ABERTA)
         {
             e->motor_cancela_entrada_ligado = 1;
@@ -355,8 +372,19 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
             e->motor_cancela_entrada_ligado = 0;
         }
 
-        if (now - e->sensor_de_presenca_saida < TEMPO_MINIMO_CANCELA_ABERTA ||
-            now - e->sensor_de_passagem_saida < TEMPO_MINIMO_CANCELA_ABERTA)
+        if (now - e->override_motor_cancela_saida < TEMPO_MINIMO_CANCELA_ABERTA)
+        {
+            e->motor_cancela_saida_ligado = 1;
+
+        }
+        else if(now - e->override_motor_0_cancela_saida < TEMPO_MINIMO_CANCELA_ABERTA)
+        {
+            e->motor_cancela_saida_ligado = 0;
+
+        }
+        else if (now - e->sensor_de_presenca_saida < TEMPO_MINIMO_CANCELA_ABERTA ||
+            now - e->sensor_de_passagem_saida < TEMPO_MINIMO_CANCELA_ABERTA
+             )
         {
             e->motor_cancela_saida_ligado = 1;
         }
