@@ -174,8 +174,6 @@ int decidir_estado_motor_cancela_saida(Estado *e)
 
 Estado *controla(Estado *e)
 {
-    // ========= INICIALIZA ITERAÇÃO DE CONTROLE
-
     IF_DEBUG log_print("[MAIN] controla()\n", LEVEL_DEBUG);
 
     if (is_nova_conexao(e))
@@ -186,6 +184,7 @@ Estado *controla(Estado *e)
         e->t_dep_1 = criar_thread_comunicar_dependente(e);
         e->t_dep_2 = criar_thread_comunicar_dependente(e);
     }
+    e->tempo_ultima_execucao = get_time_mcs();
 
     // ========= CANCELAS
 
@@ -249,10 +248,6 @@ Estado *controla(Estado *e)
     }
     e->estacionamento_lotado = is_todas_as_vagas_ocupadas(e);
 
-    // ======== COMUNICAÇÃO
-
-    e->tempo_ultima_execucao = get_time_mcs();
-
     IF_DEBUG log_print("[MAIN CONTROLA] enviando request pros dependentes\n", LEVEL_DEBUG);
     e->t_dep_1->args = e->t_dep_2->args = e;
     start_thread(e->t_dep_1);
@@ -299,7 +294,7 @@ Estado *controla(Estado *e)
 
     IF_DEBUG log_print("[MAIN CONTROLA] resultados combinados, novo estado gerado\n", LEVEL_DEBUG);
 
-    // ========= FINALIZA DA ITERAÇÃO DE CONTROLE
+    // ========= FIM
 
     time_t esperar_proximo = get_time_mcs() - e->tempo_ultima_execucao - MCS_PERIODO_MINIMO_EXEC;
 

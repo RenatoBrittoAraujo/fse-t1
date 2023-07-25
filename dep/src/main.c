@@ -14,7 +14,7 @@
 
 #define DEBUG 0
 
-#define PERIODO_MINIMO_ENTRE_EXECUCOES 300 * MILLI
+#define PERIODO_MINIMO_ENTRE_EXECUCOES 100 * MILLI
 
 // ========== COMEÇA CONFIG DE PINOS =============
 #define RASP_ESTACIONAMENTO_1_3 1
@@ -230,9 +230,18 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
 
     uint8_t end1, end2, end3;
 
-    end1 = OUT_A1_ENDERECO_01;
-    end2 = OUT_A1_ENDERECO_02;
-    end3 = OUT_A1_ENDERECO_03;
+    if (id_andar == 1)
+    {
+        end1 = OUT_A1_ENDERECO_01;
+        end2 = OUT_A1_ENDERECO_02;
+        end3 = OUT_A1_ENDERECO_03;
+    }
+    else
+    {
+        end1 = OUT_A2_ENDERECO_01;
+        end2 = OUT_A2_ENDERECO_02;
+        end3 = OUT_A2_ENDERECO_03;
+    }
 
     IF_DEBUG log_print("[DEP] le_aplica_estado verificando vagas\n", LEVEL_DEBUG);
 
@@ -253,24 +262,32 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
         if ((1 << 1) & i)
             vend2 = HIGH;
         if ((1 << 2) & i)
-            vend3 = HIGH;
+            vend3 = HIGH
 
         bcm2835_gpio_write(end1, vend1);
         bcm2835_gpio_write(end2, vend2);
         bcm2835_gpio_write(end3, vend3);
 
         fflush(NULL);
-        wait_micro(1000);
+        wait_micro(10*MILLI);
 
-        int read = bcm2835_gpio_lev(INP_A1_SENSOR_VAGA);
-        int ocupado = read == LOW;
-        if (read != LOW)
+        int readv;
+        if (id_andar == 1)
+        {
+            readv = bcm2835_gpio_lev(INP_A1_SENSOR_VAGA);
+        }
+        else
+        {
+            readv = bcm2835_gpio_lev(INP_A2_SENSOR_VAGA);
+            
+        }
+        int ocupado = readv > LOW;
+        if (ocupado)
         {
             new_vagas = new_vagas | (1 << i);
         }
          printf(" %d", ocupado);
         if (i < 7)printf(" |");
-
     }
 
     printf("\n--------- | ------------------------------- \n");
@@ -300,16 +317,24 @@ Estado *le_aplica_estado(Estado *e, int id_andar)
 
         IF_DEBUG log_print("[DEP LE APLICA ESTADO] analisando entrada\n", LEVEL_DEBUG);
 
-        atualiza_tempo(&e->sensor_de_presenca_entrada, bcm2835_gpio_lev(INP_A1_SENSOR_PRESENCA_CANCELA_ENTRADA));
+        e->sensor_de_presenca_entrada = bcm2835_gpio_lev(INP_A1_SENSOR_PRESENCA_CANCELA_ENTRADA);
 
-        atualiza_tempo(&e->sensor_de_passagem_saida, bcm2835_gpio_lev(INP_A1_SENSOR_PASSAGEM_CANCELA_SAIDA));
+        e->sensor_de_presenca_saida = bcm2835_gpio_lev(INP_A1_SENSOR_PASSAGEM_CANCELA_SAIDA);
+
+        e->sensor_de_passagem_entrada = bcm2835_gpio_lev(INP_A1_SENSOR_PASSAGEM_CANCELA_ENTRADA);
+
+        e->sensor_de_presenca_saida =
+                       bcm2835_gpio_lev(INP_A1_SENSOR_PRESENCA_CANCELA_SAIDA);
+
+        if (e->sensor_de_passagem_entrada || e->sensor_de_presenca_entrada) e->motor_cancela_entrada_ligado = 1;
+        else
+        e->motor_cancela_entrada_ligado = 0;
+
+                if (e->sensor_de_passagem_saida || e->sensor_de_presenca_saida) e->motor_cancela_saida_ligado = 1;
+        else
+        e->motor_cancela_saida_ligado = 0;
 
         bcm2835_gpio_write(OUT_A1_MOTOR_CANCELA_ENTRADA, e->motor_cancela_entrada_ligado);
-
-        atualiza_tempo(&e->sensor_de_passagem_entrada, bcm2835_gpio_lev(INP_A1_SENSOR_PASSAGEM_CANCELA_ENTRADA));
-
-        atualiza_tempo(&e->sensor_de_presenca_saida,
-                       bcm2835_gpio_lev(INP_A1_SENSOR_PRESENCA_CANCELA_SAIDA));
 
         bcm2835_gpio_write(OUT_A1_MOTOR_CANCELA_SAIDA, e->motor_cancela_saida_ligado);
 
@@ -399,10 +424,12 @@ int main()
 
     while (1)
     {
+        printf("\e[1;1H\e[2J");
+
         IF_DEBUG printf("rodando em %s:%d\n", ip, porta);
         e = le_aplica_estado(e, id_andar);
 
-        time_t agora = -get_time_mcs();
+        time_t agora = get_time_mcs();
         time_t dt = agora - last_exec ;
         time_t aguarda = PERIODO_MINIMO_ENTRE_EXECUCOES - dt;
         if (aguarda < 0) aguarda = -aguarda;
@@ -410,6 +437,6 @@ int main()
         if (dt < PERIODO_MINIMO_ENTRE_EXECUCOES)
             wait_micro(aguarda);
 
-        last_exec = -get_time_mcs();
+        last_exec = get_time_mcs();
     }
 }

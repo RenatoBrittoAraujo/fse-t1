@@ -23,12 +23,22 @@
 #define ATOR_DEP2 3
 
 #define DEBUG 1
-#define IF_DEBUG if(DEBUG)
+#define IF_DEBUG if (DEBUG)
 
 // ======= CONTROLE
 
 struct Estado
 {
+
+    // ---------- comum
+    int porta_andar_1;
+    int porta_andar_2;
+    char *ip_andar_1;
+    char *ip_andar_2;
+
+    ThreadState *t_main;
+    ThreadState *t_dep_1;
+    ThreadState *t_dep_2;
     // identificador de qual ator executou a ultima acao
     // do estado atual: ATOR_MAIN, ATOR_DEP1, ATOR_DEP2
     int ator_atual;
@@ -36,18 +46,30 @@ struct Estado
     // identificador de quando foi exectuado a ultima acao
     int tempo_ultima_execucao;
 
-    // dados servidor principal
+    // ---------- dados servidor principal
     int num_andares; // que é 2
     int estacionamento_fechado;
     int estacionamento_lotado;
 
-    // entradas para andar 1
+    // quando sensor de presenca estiver ativado mas o de passagem nao
+    // esse boleano eh settado
+
+    // quando o sensor de presenca eh desativado e esse boleano esta
+    // settado, significa que um carro entrou ou saiu
+
+    int nova_presenca_entrada;
+    int nova_presenca_saida;
+
+    int timestamp_ultimo_carro;
+    int id_last_carro;
+
+    // ---------- entradas para andar 1
     int num_vagas_andar_1;
     int andar_1_fechado;
     int motor_cancela_entrada_ligado;
     int motor_cancela_saida_ligado;
 
-    // saidas do andar 1
+    // ---------- saidas do andar 1
     int andar_1_lotado;
     int vagas_andar_1;
     time_t sensor_de_presenca_entrada;
@@ -55,11 +77,11 @@ struct Estado
     time_t sensor_de_passagem_entrada;
     time_t sensor_de_passagem_saida;
 
-    // entradas para andar 2
+    // ---------- saidas para andar 2
     int num_vagas_andar_2;
     int andar_2_fechado;
 
-    // entradas do andar 2
+    // ---------- entradas do andar 2
     int andar_2_lotado;
     int vagas_andar_2;
     time_t sensor_de_subida_de_andar;
@@ -88,6 +110,6 @@ Estado *inicializar_estado(char *env_name, int ator_atual);
 
 Estado *copiar_estado(Estado *e);
 
-void print_estado(Estado* e);
+void print_estado(Estado *e);
 
 #endif
