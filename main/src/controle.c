@@ -252,30 +252,20 @@ Estado *controla(Estado *e)
         if (e->last_vagas_andar_2 & (1 << i))
             num_vagas_last++;
 
-    printf("NUM VAGAS LAST = %d  |  NUM_VAGAS_NOW = %d\n", num_vagas_last, num_vagas_now);
-    printf("ENTRADA PENDENTE = %d  |  SAIDA PENDENTE = %d\n", e->entrada_pendente, e->saida_pendente);
-
-    if (num_vagas_last - num_vagas_now == -1)
-        printf("VAGA FOR OCUPADA\n");
-
-    if (num_vagas_last - num_vagas_now == 1)
-        printf("VAGA FOI DESOCUPADA\n");
-    fflush(NULL);
-
     if (e->entrada_pendente && num_vagas_last + 1 == num_vagas_now)
     {
         int vaga_i;
         int andar;
 
         for (int i = 0; i < 8; i++)
-            if (e->vagas_andar_1 & (1 << i) != e->last_vagas_andar_1 & (1 << i))
+            if (!!(e->vagas_andar_1 & (1 << i)) != !!(e->last_vagas_andar_1 & (1 << i)))
             {
                 vaga_i = i;
                 andar = 1;
             }
 
         for (int i = 0; i < 8; i++)
-            if (e->vagas_andar_2 & (1 << i) != e->last_vagas_andar_2 & (1 << i))
+            if (!!(e->vagas_andar_2 & (1 << i)) != !!(e->last_vagas_andar_2 & (1 << i)))
             {
                 vaga_i = i;
                 andar = 2;
@@ -288,8 +278,6 @@ Estado *controla(Estado *e)
         {
             log_print("[MAIN] vaga de estacionamento estava ocupada!", LEVEL_ERROR);
         }
-
-        printf("VAGA_I = %d\n", vaga_i);
 
         e->last_entrada_i = vaga_i;
 
@@ -306,14 +294,14 @@ Estado *controla(Estado *e)
         int andar;
 
         for (int i = 0; i < 8; i++)
-            if (e->vagas_andar_1 & (1 << i) != e->last_vagas_andar_1 & (1 << i))
+            if (!!(e->vagas_andar_1 & (1 << i)) != !!(e->last_vagas_andar_1 & (1 << i)))
             {
                 vaga_i = i;
                 andar = 1;
             }
 
         for (int i = 0; i < 8; i++)
-            if (e->vagas_andar_2 & (1 << i) != e->last_vagas_andar_2 & (1 << i))
+            if (!!(e->vagas_andar_2 & (1 << i)) != !!(e->last_vagas_andar_2 & (1 << i)))
             {
                 vaga_i = i;
                 andar = 2;
