@@ -17,7 +17,8 @@
         "garbage_collector.h": "c",
         "interface.h": "c",
         "typeinfo": "c",
-        "comm.h": "c"
+        "comm.h": "c",
+        "stdint.h": "c"
     },
     "C_Cpp.intelliSenseEngineFallback": "enabled"
 }

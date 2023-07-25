@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <stdint.h>
+#include <inttypes.h>
 
 #include "shared/inc/proto.h"
 #include "shared/inc/comm.h"
