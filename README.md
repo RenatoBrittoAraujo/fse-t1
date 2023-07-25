@@ -47,8 +47,7 @@ Sendo a api central o código encontrado na pasta `main` e a dependente no `dep`
 ![](figuras/Screenshot%20from%202023-07-25%2017-18-11.png)
 
 
-
-eu **muito** trabalho pra implementar a interface com comandos. Mas agora funciona. É só apertar a tecla com o terminal do servidor principal selecionado. Os seguintes comandos estão implementados:
+Deu **muito** trabalho pra implementar a interface com comandos. Mas agora funciona. É só apertar a tecla com o terminal do servidor principal selecionado. Os seguintes comandos estão implementados:
 
 ```
   0 - FECHAR estacionamento
