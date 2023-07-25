@@ -21,7 +21,6 @@ O sistema é composto de 3 apis.
 
 Sendo a api central o código encontrado na pasta `main` e a dependente no `dep`.
 
-
 ## Requisitos cumpridos
 
 - [x] Interface (Monitoramento): como visto no gif abaixo
@@ -35,8 +34,6 @@ Sendo a api central o código encontrado na pasta `main` e a dependente no `dep`
 - [x] Persistência dos serviços
 - [x] Qualidade do Código / Execução
 - [x] Qualidade e usabilidade acima da média.
-
-
 
 ## Interface
 
