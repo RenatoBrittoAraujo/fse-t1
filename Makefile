@@ -1,6 +1,6 @@
-IP = 164.41.98.15
-USER = renatoaraujo 
-PORT = 13508
+IP = 
+USER =  
+PORT = 
 PRJ_NAME = t1
 SERVER_PROJECT_PATH = /home/$(USER)/$(PRJ_NAME)
 PATH_MY_OS = /home/renato/Desktop/fse/$(PRJ_NAME)
