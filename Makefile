@@ -1,6 +1,5 @@
 IP = 164.41.98.15
-USER = renatoaraujo
-PASS = 180027239
+USER = renatoaraujo 
 PORT = 13508
 PRJ_NAME = t1
 SERVER_PROJECT_PATH = /home/$(USER)/$(PRJ_NAME)
